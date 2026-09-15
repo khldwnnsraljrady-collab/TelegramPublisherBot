@@ -3,223 +3,793 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
+const initData = tg.initData || "";
 
-// =====================================================
-// ELEMENTS
-// =====================================================
-
-const createPost = document.getElementById("createPost");
-const postModal = document.getElementById("postModal");
-const closeModal = document.getElementById("closeModal");
-
-const postText = document.getElementById("postText");
-
-const previewText = document.getElementById("previewText");
-const previewButtons = document.getElementById("previewButtons");
-
-const addButton = document.getElementById("addButton");
-const buttonList = document.getElementById("buttonList");
-
-const publishButton = document.getElementById("publishButton");
+let currentLanguage = "ar";
+let channels = [];
+let selectedFile = null;
+let uploadedMedia = null;
 
 
-// =====================================================
-// OPEN MODAL
-// =====================================================
+/* =====================================================
+   TRANSLATIONS
+===================================================== */
 
-createPost.addEventListener("click", () => {
+const translations = {
 
-    postModal.classList.add("show");
+    ar: {
 
-    postText.focus();
+        currentChannel: "القناة الحالية",
+        selectChannel: "اختر القناة",
 
-});
+        createPost: "إنشاء منشور",
+        createPostSub: "نص، صورة، فيديو أو ملف",
+
+        quickActions: "الإجراءات السريعة",
+
+        myPosts: "منشوراتي",
+        scheduled: "المجدولة",
+        statistics: "الإحصائيات",
+        settings: "الإعدادات",
+
+        smartLinks: "روابط ذكية",
+        smartLinksSub: "اكتشاف الروابط والأزرار تلقائيًا",
+
+        fastPublishing: "نشر سريع",
+        fastPublishingSub: "انشر المحتوى إلى قنواتك بسهولة",
+
+        secure: "آمن",
+        secureSub: "كل مستخدم يرى قنواته فقط",
+
+        newPost: "منشور جديد",
+        newPostSub: "أنشئ منشورك ثم عاينه قبل النشر",
+
+        publishTo: "النشر في",
+        postText: "نص المنشور",
+
+        media: "الوسائط والملفات",
+
+        chooseFile: "اختيار صورة أو فيديو أو ملف",
+
+        customButtons: "أزرار مخصصة",
+
+        preview: "معاينة",
+
+        cancel: "إلغاء",
+        publish: "نشر الآن",
+
+        noChannels: "لا توجد قنوات. أضف قناة أولًا.",
+
+        uploading: "جاري رفع الملف...",
+        publishing: "جاري النشر...",
+
+        published: "تم نشر المنشور بنجاح 🚀",
+
+        uploadFailed: "فشل رفع الملف",
+        publishFailed: "فشل النشر",
+
+        chooseChannel: "اختر قناة أولًا",
+
+        emptyPost: "المنشور فارغ",
+
+        addButtonText: "نص الزر",
+        addButtonUrl: "الرابط",
+
+        channelAddedBot:
+            "لإضافة قناة، أضف البوت كمسؤول ثم أرسل @username إلى البوت."
+    },
+
+    en: {
+
+        currentChannel: "Current channel",
+        selectChannel: "Select channel",
+
+        createPost: "Create Post",
+        createPostSub: "Text, photo, video or file",
+
+        quickActions: "Quick actions",
+
+        myPosts: "My posts",
+        scheduled: "Scheduled",
+        statistics: "Statistics",
+        settings: "Settings",
+
+        smartLinks: "Smart Links",
+        smartLinksSub: "Automatically detect links and buttons",
+
+        fastPublishing: "Fast Publishing",
+        fastPublishingSub: "Publish content to your channels",
+
+        secure: "Secure",
+        secureSub: "Each user only sees their own channels",
+
+        newPost: "New Post",
+        newPostSub: "Create and preview your post",
+
+        publishTo: "Publish to",
+        postText: "Post text",
+
+        media: "Media & Files",
+
+        chooseFile: "Choose photo, video or file",
+
+        customButtons: "Custom buttons",
+
+        preview: "Preview",
+
+        cancel: "Cancel",
+        publish: "Publish now",
+
+        noChannels: "No channels. Add a channel first.",
+
+        uploading: "Uploading file...",
+        publishing: "Publishing...",
+
+        published: "Post published successfully 🚀",
+
+        uploadFailed: "File upload failed",
+        publishFailed: "Publishing failed",
+
+        chooseChannel: "Choose a channel first",
+
+        emptyPost: "Post is empty",
+
+        addButtonText: "Button text",
+        addButtonUrl: "URL",
+
+        channelAddedBot:
+            "To add a channel, add the bot as administrator then send @username to the bot."
+    }
+};
 
 
-// =====================================================
-// CLOSE MODAL
-// =====================================================
+function tr(key) {
 
-closeModal.addEventListener("click", () => {
-
-    postModal.classList.remove("show");
-
-});
-
-
-// =====================================================
-// UPDATE PREVIEW
-// =====================================================
-
-postText.addEventListener("input", updatePreview);
+    return (
+        translations[currentLanguage][key]
+        ||
+        translations.ar[key]
+        ||
+        key
+    );
+}
 
 
-function updatePreview() {
+/* =====================================================
+   DOM
+===================================================== */
 
-    const text = postText.value.trim();
+const modal =
+    document.getElementById("postModal");
 
-    previewText.textContent =
-        text ||
-        "اكتب النص لمشاهدة المعاينة...";
+const postsModal =
+    document.getElementById("postsModal");
+
+const channelSelect =
+    document.getElementById("channelSelect");
+
+const postChannel =
+    document.getElementById("postChannel");
+
+const postText =
+    document.getElementById("postText");
+
+const mediaInput =
+    document.getElementById("mediaInput");
+
+const fileInfo =
+    document.getElementById("fileInfo");
+
+const previewText =
+    document.getElementById("previewText");
+
+const previewMedia =
+    document.getElementById("previewMedia");
+
+const previewButtons =
+    document.getElementById("previewButtons");
+
+const buttonsContainer =
+    document.getElementById("buttonsContainer");
+
+const toast =
+    document.getElementById("toast");
 
 
-    updateButtons();
+/* =====================================================
+   APPLY LANGUAGE
+===================================================== */
+
+function applyLanguage() {
+
+    document.documentElement.lang =
+        currentLanguage;
+
+    document.documentElement.dir =
+        currentLanguage === "ar"
+            ? "rtl"
+            : "ltr";
+
+    document
+        .querySelectorAll("[data-i18n]")
+        .forEach(element => {
+
+            const key =
+                element.dataset.i18n;
+
+            const value =
+                tr(key);
+
+            if (value) {
+                element.textContent = value;
+            }
+
+        });
+
+    postText.placeholder =
+        currentLanguage === "ar"
+            ? "اكتب منشورك هنا..."
+            : "Write your post here...";
 
 }
 
 
-// =====================================================
-// EXTRACT LINKS
-// =====================================================
+/* =====================================================
+   LOAD CHANNELS
+===================================================== */
 
-function extractLinks(text) {
+async function loadChannels() {
 
-    const results = [];
+    try {
 
-    const urlRegex =
-        /https?:\/\/[^\s<>()]+/gi;
+        const response =
+            await fetch(
+                "/api/channels",
+                {
+                    headers: {
+                        "X-Telegram-Init-Data":
+                            initData
+                    }
+                }
+            );
 
-    const usernameRegex =
-        /(^|\s)@([A-Za-z0-9_]{5,32})\b/g;
+        const data =
+            await response.json();
+
+        if (!data.ok) {
+
+            showToast(
+                "Unauthorized"
+            );
+
+            return;
+        }
+
+        channels =
+            data.channels || [];
+
+        renderChannels();
+
+    } catch (error) {
+
+        console.error(error);
+
+        showToast(
+            "Failed to load channels"
+        );
+    }
+}
 
 
-    const urls =
-        text.match(urlRegex) || [];
+/* =====================================================
+   RENDER CHANNELS
+===================================================== */
 
+function renderChannels() {
 
-    urls.forEach(url => {
+    channelSelect.innerHTML = "";
 
-        url = url.replace(
-            /[.,!?;:)\]}]+$/,
-            ""
+    postChannel.innerHTML = "";
+
+    if (!channels.length) {
+
+        const option =
+            document.createElement("option");
+
+        option.value = "";
+
+        option.textContent =
+            tr("noChannels");
+
+        channelSelect.appendChild(
+            option
         );
 
-        if (!results.some(x => x.url === url)) {
+        postChannel.appendChild(
+            option.cloneNode(true)
+        );
 
-            let label = "🌐 فتح الرابط";
-
-            const lower =
-                url.toLowerCase();
-
-
-            if (
-                lower.includes("t.me/") ||
-                lower.includes("telegram.me/")
-            ) {
-
-                const parts =
-                    url.split("/");
-
-                const username =
-                    parts[parts.length - 1]
-                    .split("?")[0];
-
-                label =
-                    "📢 " + username;
-
-            }
-
-            else if (
-                lower.includes("youtube.com") ||
-                lower.includes("youtu.be")
-            ) {
-
-                label = "▶️ YouTube";
-
-            }
-
-            else if (
-                lower.includes("github.com")
-            ) {
-
-                label = "💻 GitHub";
-
-            }
-
-            else if (
-                lower.includes("instagram.com")
-            ) {
-
-                label = "📸 Instagram";
-
-            }
-
-            results.push({
-                label,
-                url
-            });
-
-        }
-
-    });
-
-
-    let match;
-
-    while (
-        (match =
-            usernameRegex.exec(text)) !== null
-    ) {
-
-        const username =
-            match[2];
-
-        const url =
-            `https://t.me/${username}`;
-
-        if (
-            !results.some(
-                x =>
-                    x.url.toLowerCase() ===
-                    url.toLowerCase()
-            )
-        ) {
-
-            results.push({
-                label:
-                    "👤 " + username,
-
-                url
-            });
-
-        }
-
+        return;
     }
 
 
-    return results;
+    channels.forEach(channel => {
+
+        const label =
+            channel.username
+            ||
+            channel.title
+            ||
+            channel.id;
+
+        const option1 =
+            document.createElement("option");
+
+        option1.value =
+            channel.id;
+
+        option1.textContent =
+            label;
+
+        channelSelect.appendChild(
+            option1
+        );
+
+
+        const option2 =
+            option1.cloneNode(true);
+
+        postChannel.appendChild(
+            option2
+        );
+
+    });
 
 }
 
 
-// =====================================================
-// CUSTOM BUTTONS
-// =====================================================
+/* =====================================================
+   OPEN POST MODAL
+===================================================== */
 
-function getCustomButtons() {
+document
+    .getElementById("createPostButton")
+    .addEventListener(
+        "click",
+        () => {
 
-    const rows =
-        buttonList.querySelectorAll(
-            ".custom-row"
+            if (!channels.length) {
+
+                showToast(
+                    tr("noChannels")
+                );
+
+                tg.HapticFeedback
+                    ?.notificationOccurred(
+                        "warning"
+                    );
+
+                return;
+            }
+
+            modal.classList.add("show");
+
+            updatePreview();
+
+        }
+    );
+
+
+/* =====================================================
+   CLOSE
+===================================================== */
+
+document
+    .getElementById("closeModal")
+    .addEventListener(
+        "click",
+        closePostModal
+    );
+
+document
+    .getElementById("cancelButton")
+    .addEventListener(
+        "click",
+        closePostModal
+    );
+
+
+function closePostModal() {
+
+    modal.classList.remove(
+        "show"
+    );
+
+}
+
+
+/* =====================================================
+   LANGUAGE
+===================================================== */
+
+document
+    .getElementById("languageButton")
+    .addEventListener(
+        "click",
+        () => {
+
+            currentLanguage =
+                currentLanguage === "ar"
+                    ? "en"
+                    : "ar";
+
+            applyLanguage();
+
+            tg.HapticFeedback
+                ?.selectionChanged();
+
+        }
+    );
+
+
+/* =====================================================
+   ADD CHANNEL
+===================================================== */
+
+document
+    .getElementById("addChannelButton")
+    .addEventListener(
+        "click",
+        () => {
+
+            tg.showAlert(
+                tr("channelAddedBot")
+            );
+
+        }
+    );
+
+
+/* =====================================================
+   TEXT PREVIEW
+===================================================== */
+
+postText.addEventListener(
+    "input",
+    updatePreview
+);
+
+
+/* =====================================================
+   FILE PICKER
+===================================================== */
+
+document
+    .getElementById("uploadButton")
+    .addEventListener(
+        "click",
+        () => {
+
+            mediaInput.click();
+
+        }
+    );
+
+
+mediaInput.addEventListener(
+    "change",
+    async () => {
+
+        selectedFile =
+            mediaInput.files[0];
+
+        if (!selectedFile) {
+            return;
+        }
+
+        fileInfo.classList.remove(
+            "hidden"
         );
 
-    const buttons = [];
+        fileInfo.textContent =
+            `${selectedFile.name} — ${formatBytes(selectedFile.size)}`;
+
+        previewFile(
+            selectedFile
+        );
+
+        await uploadFile();
+
+    }
+);
+
+
+/* =====================================================
+   PREVIEW FILE
+===================================================== */
+
+function previewFile(file) {
+
+    previewMedia.innerHTML = "";
+
+    previewMedia.classList.remove(
+        "hidden"
+    );
+
+    if (
+        file.type.startsWith(
+            "image/"
+        )
+    ) {
+
+        const img =
+            document.createElement(
+                "img"
+            );
+
+        img.src =
+            URL.createObjectURL(
+                file
+            );
+
+        previewMedia.appendChild(
+            img
+        );
+
+    }
+
+    else if (
+        file.type.startsWith(
+            "video/"
+        )
+    ) {
+
+        const video =
+            document.createElement(
+                "video"
+            );
+
+        video.src =
+            URL.createObjectURL(
+                file
+            );
+
+        video.controls = true;
+
+        previewMedia.appendChild(
+            video
+        );
+
+    }
+
+    else {
+
+        previewMedia.textContent =
+            `📎 ${file.name}`;
+
+    }
+
+}
+
+
+/* =====================================================
+   UPLOAD
+===================================================== */
+
+async function uploadFile() {
+
+    showToast(
+        tr("uploading")
+    );
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "file",
+        selectedFile
+    );
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/upload",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "X-Telegram-Init-Data":
+                            initData
+                    },
+
+                    body: formData
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!data.ok) {
+
+            uploadedMedia =
+                null;
+
+            showToast(
+                data.error
+                ||
+                tr("uploadFailed")
+            );
+
+            return;
+        }
+
+        uploadedMedia =
+            data;
+
+        showToast(
+            "✓"
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        uploadedMedia =
+            null;
+
+        showToast(
+            tr("uploadFailed")
+        );
+    }
+
+}
+
+
+/* =====================================================
+   CUSTOM BUTTONS
+===================================================== */
+
+document
+    .getElementById("addButton")
+    .addEventListener(
+        "click",
+        addCustomButton
+    );
+
+
+function addCustomButton(
+    text = "",
+    url = ""
+) {
+
+    const row =
+        document.createElement(
+            "div"
+        );
+
+    row.className =
+        "custom-button-row";
+
+
+    const textInput =
+        document.createElement(
+            "input"
+        );
+
+    textInput.placeholder =
+        tr("addButtonText");
+
+    textInput.value =
+        text;
+
+
+    const urlInput =
+        document.createElement(
+            "input"
+        );
+
+    urlInput.placeholder =
+        tr("addButtonUrl");
+
+    urlInput.value =
+        url;
+
+
+    const remove =
+        document.createElement(
+            "button"
+        );
+
+    remove.className =
+        "remove-button";
+
+    remove.textContent =
+        "×";
+
+
+    textInput.addEventListener(
+        "input",
+        updatePreview
+    );
+
+    urlInput.addEventListener(
+        "input",
+        updatePreview
+    );
+
+    remove.addEventListener(
+        "click",
+        () => {
+
+            row.remove();
+
+            updatePreview();
+
+        }
+    );
+
+
+    row.appendChild(
+        textInput
+    );
+
+    row.appendChild(
+        urlInput
+    );
+
+    row.appendChild(
+        remove
+    );
+
+    buttonsContainer.appendChild(
+        row
+    );
+
+    updatePreview();
+
+}
+
+
+/* =====================================================
+   GET BUTTONS
+===================================================== */
+
+function getButtons() {
+
+    const result = [];
+
+    const rows =
+        buttonsContainer.querySelectorAll(
+            ".custom-button-row"
+        );
 
     rows.forEach(row => {
 
         const inputs =
-            row.querySelectorAll("input");
+            row.querySelectorAll(
+                "input"
+            );
 
-        const label =
+        const text =
             inputs[0].value.trim();
 
         const url =
             inputs[1].value.trim();
 
-        if (label && url) {
+        if (
+            text &&
+            (
+                url.startsWith("https://")
+                ||
+                url.startsWith("http://")
+                ||
+                url.startsWith("tg://")
+            )
+        ) {
 
-            buttons.push({
-                label,
+            result.push({
+                text,
                 url
             });
 
@@ -227,246 +797,601 @@ function getCustomButtons() {
 
     });
 
-    return buttons;
-
+    return result;
 }
 
 
-// =====================================================
-// UPDATE BUTTON PREVIEW
-// =====================================================
+/* =====================================================
+   AUTO DETECT LINKS
+===================================================== */
 
-function updateButtons() {
+function detectLinks(text) {
+
+    const buttons = [];
+
+    if (
+        !document.getElementById(
+            "smartLinks"
+        ).checked
+    ) {
+
+        return buttons;
+    }
+
+
+    const urlRegex =
+        /https?:\/\/[^\s<]+/gi;
+
+    const urls =
+        text.match(
+            urlRegex
+        )
+        || [];
+
+
+    const unique =
+        [...new Set(urls)];
+
+
+    unique
+        .slice(0, 8)
+        .forEach(url => {
+
+            buttons.push({
+                text:
+                    currentLanguage === "ar"
+                        ? "🔗 فتح الرابط"
+                        : "🔗 Open link",
+
+                url
+            });
+
+        });
+
+
+    return buttons;
+}
+
+
+/* =====================================================
+   PREVIEW
+===================================================== */
+
+function updatePreview() {
+
+    const text =
+        postText.value.trim();
+
+    previewText.textContent =
+        text
+        ||
+        (
+            currentLanguage === "ar"
+                ? "اكتب شيئًا للمعاينة..."
+                : "Write something to preview..."
+        );
+
 
     previewButtons.innerHTML = "";
 
-    const text =
-        postText.value;
-
-    const automatic =
-        extractLinks(text);
 
     const custom =
-        getCustomButtons();
+        getButtons();
 
-    const all =
-        [...automatic, ...custom];
+    const automatic =
+        detectLinks(
+            text
+        );
 
 
-    all.forEach(button => {
+    const allButtons = [
+        ...custom,
+        ...automatic
+    ];
 
-        const element =
-            document.createElement("div");
 
-        element.className =
-            "preview-button";
+    const unique = [];
 
-        element.textContent =
-            button.label;
+    const seen = new Set();
 
-        previewButtons.appendChild(
-            element
+
+    allButtons.forEach(button => {
+
+        if (
+            seen.has(
+                button.url
+            )
+        ) {
+            return;
+        }
+
+        seen.add(
+            button.url
+        );
+
+        unique.push(
+            button
         );
 
     });
 
+
+    unique.forEach(
+        button => {
+
+            const element =
+                document.createElement(
+                    "div"
+                );
+
+            element.className =
+                "preview-button";
+
+            element.textContent =
+                button.text;
+
+            previewButtons.appendChild(
+                element
+            );
+
+        }
+    );
+
 }
 
 
-// =====================================================
-// ADD CUSTOM BUTTON
-// =====================================================
+/* =====================================================
+   SMART LINKS
+===================================================== */
 
-addButton.addEventListener(
-    "click",
-    () => {
-
-        const row =
-            document.createElement("div");
-
-        row.className =
-            "custom-row";
+document
+    .getElementById("smartLinks")
+    .addEventListener(
+        "change",
+        updatePreview
+    );
 
 
-        const label =
-            document.createElement("input");
+/* =====================================================
+   PUBLISH
+===================================================== */
 
-        label.placeholder =
-            "اسم الزر";
-
-
-        const url =
-            document.createElement("input");
-
-        url.placeholder =
-            "https://example.com";
+document
+    .getElementById("publishButton")
+    .addEventListener(
+        "click",
+        publish
+    );
 
 
-        const remove =
-            document.createElement("button");
+async function publish() {
 
-        remove.className =
-            "delete-button";
+    const channelId =
+        postChannel.value;
 
-        remove.textContent =
-            "×";
+    const text =
+        postText.value.trim();
 
 
-        remove.addEventListener(
-            "click",
-            () => {
+    if (!channelId) {
 
-                row.remove();
+        showToast(
+            tr("chooseChannel")
+        );
 
-                updateButtons();
+        return;
+    }
+
+
+    if (
+        !text &&
+        !uploadedMedia
+    ) {
+
+        showToast(
+            tr("emptyPost")
+        );
+
+        return;
+    }
+
+
+    const buttons = [
+        ...getButtons(),
+        ...detectLinks(text)
+    ];
+
+
+    const uniqueButtons = [];
+
+    const seen =
+        new Set();
+
+
+    buttons.forEach(
+        button => {
+
+            if (
+                seen.has(
+                    button.url
+                )
+            ) {
+                return;
+            }
+
+            seen.add(
+                button.url
+            );
+
+            uniqueButtons.push(
+                button
+            );
+
+        }
+    );
+
+
+    const payload = {
+
+        channel_id:
+            channelId,
+
+        text,
+
+        media_type:
+            uploadedMedia
+                ? uploadedMedia.media_type
+                : null,
+
+        media_path:
+            uploadedMedia
+                ? uploadedMedia.path
+                : null,
+
+        buttons:
+            uniqueButtons
+
+    };
+
+
+    const publishButton =
+        document.getElementById(
+            "publishButton"
+        );
+
+
+    publishButton.disabled =
+        true;
+
+    publishButton.innerHTML =
+        `⏳ ${tr("publishing")}`;
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/publish",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "X-Telegram-Init-Data":
+                            initData
+                    },
+
+                    body:
+                        JSON.stringify(
+                            payload
+                        )
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.ok) {
+
+            showToast(
+                data.error
+                ||
+                tr("publishFailed")
+            );
+
+            return;
+        }
+
+
+        tg.HapticFeedback
+            ?.notificationOccurred(
+                "success"
+            );
+
+
+        showToast(
+            tr("published")
+        );
+
+
+        resetPost();
+
+        closePostModal();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        showToast(
+            tr("publishFailed")
+        );
+
+    } finally {
+
+        publishButton.disabled =
+            false;
+
+        publishButton.innerHTML =
+            `🚀 <span>${tr("publish")}</span>`;
+
+    }
+
+}
+
+
+/* =====================================================
+   RESET
+===================================================== */
+
+function resetPost() {
+
+    postText.value = "";
+
+    mediaInput.value = "";
+
+    selectedFile =
+        null;
+
+    uploadedMedia =
+        null;
+
+    fileInfo.classList.add(
+        "hidden"
+    );
+
+    previewMedia.innerHTML = "";
+
+    previewMedia.classList.add(
+        "hidden"
+    );
+
+    buttonsContainer.innerHTML =
+        "";
+
+    updatePreview();
+
+}
+
+
+/* =====================================================
+   POSTS
+===================================================== */
+
+document
+    .getElementById("postsButton")
+    .addEventListener(
+        "click",
+        loadPosts
+    );
+
+
+document
+    .getElementById("closePostsModal")
+    .addEventListener(
+        "click",
+        () => {
+
+            postsModal.classList.remove(
+                "show"
+            );
+
+        }
+    );
+
+
+async function loadPosts() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/posts",
+                {
+                    headers: {
+                        "X-Telegram-Init-Data":
+                            initData
+                    }
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.ok) {
+            return;
+        }
+
+
+        const list =
+            document.getElementById(
+                "postsList"
+            );
+
+
+        list.innerHTML = "";
+
+
+        if (!data.posts.length) {
+
+            list.innerHTML =
+                `<div class="post-item">
+                    ${tr("noPosts")}
+                 </div>`;
+
+        }
+
+
+        data.posts.forEach(
+            post => {
+
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+                item.className =
+                    "post-item";
+
+
+                const title =
+                    document.createElement(
+                        "strong"
+                    );
+
+                title.textContent =
+                    `#${post.id} · ${post.media_type || "text"}`;
+
+
+                const content =
+                    document.createElement(
+                        "p"
+                    );
+
+                content.textContent =
+                    post.text
+                    ||
+                    "📎 Media post";
+
+
+                item.appendChild(
+                    title
+                );
+
+                item.appendChild(
+                    content
+                );
+
+                list.appendChild(
+                    item
+                );
 
             }
         );
 
 
-        label.addEventListener(
-            "input",
-            updateButtons
-        );
-
-        url.addEventListener(
-            "input",
-            updateButtons
+        postsModal.classList.add(
+            "show"
         );
 
 
-        row.appendChild(label);
-        row.appendChild(url);
-        row.appendChild(remove);
+    } catch (error) {
 
-        buttonList.appendChild(row);
-
-        label.focus();
-
-    }
-);
-
-
-// =====================================================
-// PUBLISH
-// =====================================================
-
-publishButton.addEventListener(
-    "click",
-    () => {
-
-        const text =
-            postText.value.trim();
-
-        if (!text) {
-
-            tg.showAlert(
-                "⚠️ اكتب نص المنشور أولًا."
-            );
-
-            return;
-
-        }
-
-
-        const automatic =
-            extractLinks(text);
-
-        const custom =
-            getCustomButtons();
-
-
-        const payload = {
-
-            type: "text",
-
-            text,
-
-            buttons: [
-                ...automatic,
-                ...custom
-            ]
-
-        };
-
-
-        /*
-         * Telegram WebApp sendData has
-         * a limited payload size.
-         */
-
-        const data =
-            JSON.stringify(payload);
-
-
-        if (data.length > 4000) {
-
-            tg.showAlert(
-                "⚠️ المنشور كبير جدًا لإرساله من Mini App."
-            );
-
-            return;
-
-        }
-
-
-        tg.sendData(data);
-
-        tg.close();
-
-    }
-);
-
-
-// =====================================================
-// TELEGRAM THEME
-// =====================================================
-
-function applyTelegramTheme() {
-
-    const params =
-        tg.themeParams || {};
-
-
-    if (params.bg_color) {
-
-        document.documentElement
-            .style
-            .setProperty(
-                "--telegram-bg",
-                params.bg_color
-            );
+        console.error(error);
 
     }
 
 }
 
 
-applyTelegramTheme();
+/* =====================================================
+   TOAST
+===================================================== */
+
+let toastTimer = null;
 
 
-// =====================================================
-// BACK BUTTON
-// =====================================================
+function showToast(message) {
 
-tg.BackButton.onClick(
-    () => {
+    toast.textContent =
+        message;
 
-        if (
-            postModal.classList.contains(
-                "show"
-            )
-        ) {
+    toast.classList.add(
+        "show"
+    );
 
-            postModal.classList.remove(
-                "show"
-            );
 
-        } else {
+    clearTimeout(
+        toastTimer
+    );
 
-            tg.close();
 
-        }
+    toastTimer =
+        setTimeout(
+            () => {
 
+                toast.classList.remove(
+                    "show"
+                );
+
+            },
+            2500
+        );
+
+}
+
+
+/* =====================================================
+   FORMAT SIZE
+===================================================== */
+
+function formatBytes(bytes) {
+
+    if (!bytes) {
+        return "0 B";
     }
-);
+
+    const units = [
+        "B",
+        "KB",
+        "MB",
+        "GB"
+    ];
+
+    const index =
+        Math.floor(
+            Math.log(bytes) /
+            Math.log(1024)
+        );
+
+    return (
+        (bytes /
+            Math.pow(
+                1024,
+                index
+            )
+        ).toFixed(1)
+        +
+        " "
+        +
+        units[index]
+    );
+
+}
+
+
+/* =====================================================
+   INIT
+===================================================== */
+
+applyLanguage();
+
+loadChannels();
+
+updatePreview();
