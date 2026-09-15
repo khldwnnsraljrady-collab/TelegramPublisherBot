@@ -9,6 +9,8 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     >
 
+    <meta name="theme-color" content="#080b18">
+
     <title>Telegram Publisher</title>
 
     <link rel="stylesheet" href="style.css">
@@ -42,7 +44,7 @@
 
             <div class="status">
                 <span class="status-dot"></span>
-                ONLINE
+                <span data-i18n="online">ONLINE</span>
             </div>
 
         </header>
@@ -52,46 +54,92 @@
 
         <section class="welcome">
 
-            <span class="small-label">
+            <span class="small-label" data-i18n="controlCenter">
                 ✨ CONTROL CENTER
             </span>
 
-            <h2>
+            <h2 id="welcomeTitle">
                 أهلاً بك 👋
             </h2>
 
-            <p>
-                أنشئ منشوراتك وانشرها لقناتك
+            <p id="welcomeDescription">
+                أنشئ منشوراتك وانشرها لقنواتك
                 بطريقة سريعة واحترافية.
             </p>
 
         </section>
 
 
-        <!-- CHANNEL CARD -->
+        <!-- CHANNEL SECTION -->
 
-        <section class="channel-card">
+        <section class="section">
 
-            <div class="channel-icon">
-                📢
-            </div>
+            <div class="section-title">
 
-            <div class="channel-info">
+                <span>📢</span>
 
-                <span>
-                    القناة الحالية
+                <span data-i18n="yourChannels">
+                    قنواتك
                 </span>
 
-                <strong id="channelName">
-                    @razanaltifa
-                </strong>
+                <button
+                    class="add-channel-button"
+                    id="addChannelButton"
+                    type="button"
+                >
+                    +
+                    <span data-i18n="addChannel">
+                        إضافة قناة
+                    </span>
+                </button>
 
             </div>
 
-            <div class="online-badge">
-                <span></span>
-                متصل
+
+            <!-- CHANNEL SELECT -->
+
+            <div class="channel-card">
+
+                <div class="channel-icon">
+                    📢
+                </div>
+
+                <div class="channel-info">
+
+                    <span data-i18n="selectedChannel">
+                        القناة المحددة
+                    </span>
+
+                    <select
+                        id="channelSelect"
+                        class="channel-select"
+                    >
+                        <option value="">
+                            تحميل القنوات...
+                        </option>
+                    </select>
+
+                </div>
+
+                <div class="online-badge">
+
+                    <span></span>
+
+                    <span data-i18n="connected">
+                        متصل
+                    </span>
+
+                </div>
+
             </div>
+
+
+            <!-- CHANNEL LIST -->
+
+            <div
+                class="channels-list"
+                id="channelsList"
+            ></div>
 
         </section>
 
@@ -101,6 +149,7 @@
         <button
             class="create-button"
             id="createPost"
+            type="button"
         >
 
             <div class="button-icon">
@@ -109,11 +158,11 @@
 
             <div class="button-text">
 
-                <strong>
+                <strong data-i18n="createPost">
                     إنشاء منشور
                 </strong>
 
-                <span>
+                <span data-i18n="createPostDescription">
                     ابدأ منشورًا جديدًا
                 </span>
 
@@ -131,74 +180,96 @@
         <section class="section">
 
             <div class="section-title">
+
                 <span>⚡</span>
-                إجراءات سريعة
+
+                <span data-i18n="quickActions">
+                    إجراءات سريعة
+                </span>
+
             </div>
+
 
             <div class="quick-grid">
 
-                <button class="quick-card">
+                <button
+                    class="quick-card"
+                    type="button"
+                    id="myPostsButton"
+                >
 
                     <div class="quick-icon purple">
                         📋
                     </div>
 
-                    <strong>
+                    <strong data-i18n="myPosts">
                         منشوراتي
                     </strong>
 
-                    <span>
+                    <span data-i18n="savedPosts">
                         المحفوظة
                     </span>
 
                 </button>
 
 
-                <button class="quick-card">
+                <button
+                    class="quick-card"
+                    type="button"
+                    id="scheduledButton"
+                >
 
                     <div class="quick-icon blue">
                         ⏰
                     </div>
 
-                    <strong>
+                    <strong data-i18n="scheduled">
                         المجدولة
                     </strong>
 
-                    <span>
+                    <span data-i18n="waiting">
                         قيد الانتظار
                     </span>
 
                 </button>
 
 
-                <button class="quick-card">
+                <button
+                    class="quick-card"
+                    type="button"
+                    id="statisticsButton"
+                >
 
                     <div class="quick-icon cyan">
                         📊
                     </div>
 
-                    <strong>
+                    <strong data-i18n="statistics">
                         الإحصائيات
                     </strong>
 
-                    <span>
+                    <span data-i18n="channelPerformance">
                         أداء القناة
                     </span>
 
                 </button>
 
 
-                <button class="quick-card">
+                <button
+                    class="quick-card"
+                    type="button"
+                    id="settingsButton"
+                >
 
                     <div class="quick-icon orange">
                         ⚙️
                     </div>
 
-                    <strong>
+                    <strong data-i18n="settings">
                         الإعدادات
                     </strong>
 
-                    <span>
+                    <span data-i18n="customize">
                         تخصيص النظام
                     </span>
 
@@ -220,13 +291,15 @@
                 </div>
 
                 <div>
+
                     <strong>
                         Smart Links
                     </strong>
 
-                    <span>
+                    <span data-i18n="smartLinksDescription">
                         اكتشاف الروابط تلقائيًا
                     </span>
+
                 </div>
 
             </div>
@@ -239,13 +312,15 @@
                 </div>
 
                 <div>
+
                     <strong>
                         Fast Publishing
                     </strong>
 
-                    <span>
+                    <span data-i18n="fastPublishingDescription">
                         نشر سريع وآمن
                     </span>
+
                 </div>
 
             </div>
@@ -258,13 +333,15 @@
                 </div>
 
                 <div>
+
                     <strong>
                         Secure
                     </strong>
 
-                    <span>
-                        وصول المدير فقط
+                    <span data-i18n="secureDescription">
+                        كل مستخدم يدير قنواته فقط
                     </span>
+
                 </div>
 
             </div>
@@ -282,7 +359,7 @@
                 💎 Telegram Publisher
             </span>
 
-            <small>
+            <small data-i18n="crafted">
                 Crafted for Telegram
             </small>
 
@@ -298,19 +375,28 @@
         id="postModal"
     >
 
-        <div class="modal-overlay"></div>
+        <div
+            class="modal-overlay"
+            id="modalOverlay"
+        ></div>
+
 
         <div class="modal-box">
+
+            <!-- MODAL HEADER -->
 
             <div class="modal-header">
 
                 <div>
 
-                    <span class="small-label">
+                    <span
+                        class="small-label"
+                        data-i18n="create"
+                    >
                         CREATE
                     </span>
 
-                    <h2>
+                    <h2 data-i18n="newPost">
                         ✨ منشور جديد
                     </h2>
 
@@ -319,6 +405,96 @@
                 <button
                     class="close-button"
                     id="closeModal"
+                    type="button"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <!-- CHANNEL -->
+
+            <label data-i18n="publishTo">
+                نشر إلى
+            </label>
+
+            <select
+                id="postChannel"
+                class="post-channel-select"
+            >
+                <option value="">
+                    اختر القناة
+                </option>
+            </select>
+
+
+            <!-- MEDIA UPLOAD -->
+
+            <label
+                class="upload-label"
+                for="mediaInput"
+            >
+
+                <div class="upload-icon">
+                    📎
+                </div>
+
+                <div class="upload-text">
+
+                    <strong data-i18n="addMedia">
+                        إضافة صورة أو ملف
+                    </strong>
+
+                    <span data-i18n="mediaDescription">
+                        صورة، فيديو، ملف، صوت أو GIF
+                    </span>
+
+                </div>
+
+                <div class="upload-arrow">
+                    ＋
+                </div>
+
+            </label>
+
+
+            <input
+                type="file"
+                id="mediaInput"
+                hidden
+                accept="image/*,video/*,audio/*,.gif,.pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.txt,.apk"
+            >
+
+
+            <!-- SELECTED FILE -->
+
+            <div
+                class="selected-file"
+                id="selectedFile"
+                hidden
+            >
+
+                <div class="file-preview">
+                    📎
+                </div>
+
+                <div class="file-info">
+
+                    <strong id="fileName">
+                        file
+                    </strong>
+
+                    <span id="fileSize">
+                        0 MB
+                    </span>
+
+                </div>
+
+                <button
+                    type="button"
+                    id="removeFile"
+                    class="remove-file"
                 >
                     ×
                 </button>
@@ -328,7 +504,7 @@
 
             <!-- TEXT -->
 
-            <label>
+            <label data-i18n="postText">
                 نص المنشور
             </label>
 
@@ -337,6 +513,16 @@
                 placeholder="اكتب محتوى المنشور هنا..."
                 maxlength="4096"
             ></textarea>
+
+
+            <!-- CHARACTER COUNT -->
+
+            <div
+                class="character-count"
+                id="characterCount"
+            >
+                0 / 4096
+            </div>
 
 
             <!-- SMART LINK -->
@@ -353,33 +539,43 @@
                         Smart Links
                     </strong>
 
-                    <p>
-                        سيتم اكتشاف الروابط و
-                        @username تلقائيًا وتحويلها
+                    <p data-i18n="smartLinksHelp">
+                        سيتم اكتشاف الروابط تلقائيًا وتحويلها
                         إلى أزرار.
                     </p>
 
                 </div>
 
-                <div class="switch active">
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="smartLinksToggle"
+                        checked
+                    >
+
                     <span></span>
-                </div>
+
+                </label>
 
             </div>
 
 
-            <!-- BUTTONS -->
+            <!-- CUSTOM BUTTONS -->
 
             <div class="custom-buttons">
 
                 <div class="custom-title">
 
-                    <span>
+                    <span data-i18n="buttons">
                         🔘 الأزرار
                     </span>
 
-                    <button id="addButton">
-                        + إضافة
+                    <button
+                        id="addButton"
+                        type="button"
+                    >
+                        + <span data-i18n="add">إضافة</span>
                     </button>
 
                 </div>
@@ -389,11 +585,17 @@
             </div>
 
 
-            <!-- PREVIEW -->
+            <!-- PREVIEW TITLE -->
 
-            <div class="preview-title">
+            <div
+                class="preview-title"
+                data-i18n="preview"
+            >
                 👀 المعاينة
             </div>
+
+
+            <!-- TELEGRAM PREVIEW -->
 
             <div
                 class="telegram-preview"
@@ -417,6 +619,16 @@
                         اكتب النص لمشاهدة المعاينة...
                     </div>
 
+
+                    <!-- MEDIA PREVIEW -->
+
+                    <div
+                        id="previewMedia"
+                        class="preview-media"
+                        hidden
+                    ></div>
+
+
                     <div
                         id="previewButtons"
                         class="preview-buttons"
@@ -427,19 +639,192 @@
             </div>
 
 
-            <!-- ACTION -->
+            <!-- PROGRESS -->
+
+            <div
+                class="upload-progress"
+                id="uploadProgress"
+                hidden
+            >
+
+                <div class="progress-info">
+
+                    <span id="progressText">
+                        جاري الرفع...
+                    </span>
+
+                    <span id="progressPercent">
+                        0%
+                    </span>
+
+                </div>
+
+                <div class="progress-bar">
+
+                    <div
+                        id="progressBar"
+                        class="progress-value"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PUBLISH -->
 
             <button
                 class="publish-button"
                 id="publishButton"
+                type="button"
             >
 
                 🚀
-                نشر المنشور
+
+                <span data-i18n="publish">
+                    نشر المنشور
+                </span>
 
             </button>
 
         </div>
+
+    </div>
+
+
+    <!-- ADD CHANNEL MODAL -->
+
+    <div
+        class="modal"
+        id="channelModal"
+    >
+
+        <div
+            class="modal-overlay"
+            id="channelModalOverlay"
+        ></div>
+
+
+        <div class="modal-box channel-modal-box">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span
+                        class="small-label"
+                        data-i18n="channel"
+                    >
+                        CHANNEL
+                    </span>
+
+                    <h2 data-i18n="addNewChannel">
+                        📢 إضافة قناة
+                    </h2>
+
+                </div>
+
+                <button
+                    class="close-button"
+                    id="closeChannelModal"
+                    type="button"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="channel-help">
+
+                <div class="help-step">
+
+                    <span>1</span>
+
+                    <p data-i18n="channelStep1">
+                        أضف البوت إلى قناتك كمسؤول.
+                    </p>
+
+                </div>
+
+
+                <div class="help-step">
+
+                    <span>2</span>
+
+                    <p data-i18n="channelStep2">
+                        امنحه صلاحية نشر الرسائل.
+                    </p>
+
+                </div>
+
+
+                <div class="help-step">
+
+                    <span>3</span>
+
+                    <p data-i18n="channelStep3">
+                        أدخل اسم مستخدم القناة مثل:
+                        @KhaldounSoft
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <label data-i18n="channelUsername">
+                اسم مستخدم القناة
+            </label>
+
+            <input
+                type="text"
+                id="channelUsername"
+                class="channel-input"
+                placeholder="@KhaldounSoft"
+                autocomplete="off"
+            >
+
+
+            <button
+                class="publish-button"
+                id="verifyChannelButton"
+                type="button"
+            >
+
+                🔍
+
+                <span data-i18n="verifyChannel">
+                    التحقق من القناة
+                </span>
+
+            </button>
+
+
+            <div
+                class="channel-message"
+                id="channelMessage"
+            ></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TOAST -->
+
+    <div
+        class="toast"
+        id="toast"
+    >
+
+        <span id="toastIcon">
+            ✓
+        </span>
+
+        <span id="toastMessage">
+            Done
+        </span>
 
     </div>
 
