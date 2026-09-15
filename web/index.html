@@ -1,0 +1,453 @@
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
+    <title>Telegram Publisher</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+
+    <div class="background-glow glow-one"></div>
+    <div class="background-glow glow-two"></div>
+
+    <main class="app">
+
+        <!-- HEADER -->
+
+        <header class="header">
+
+            <div class="brand">
+
+                <div class="brand-icon">
+                    ⚡
+                </div>
+
+                <div>
+                    <h1>Telegram</h1>
+                    <span>Publisher</span>
+                </div>
+
+            </div>
+
+            <div class="status">
+                <span class="status-dot"></span>
+                ONLINE
+            </div>
+
+        </header>
+
+
+        <!-- WELCOME -->
+
+        <section class="welcome">
+
+            <span class="small-label">
+                ✨ CONTROL CENTER
+            </span>
+
+            <h2>
+                أهلاً بك 👋
+            </h2>
+
+            <p>
+                أنشئ منشوراتك وانشرها لقناتك
+                بطريقة سريعة واحترافية.
+            </p>
+
+        </section>
+
+
+        <!-- CHANNEL CARD -->
+
+        <section class="channel-card">
+
+            <div class="channel-icon">
+                📢
+            </div>
+
+            <div class="channel-info">
+
+                <span>
+                    القناة الحالية
+                </span>
+
+                <strong id="channelName">
+                    @razanaltifa
+                </strong>
+
+            </div>
+
+            <div class="online-badge">
+                <span></span>
+                متصل
+            </div>
+
+        </section>
+
+
+        <!-- CREATE POST -->
+
+        <button
+            class="create-button"
+            id="createPost"
+        >
+
+            <div class="button-icon">
+                ✨
+            </div>
+
+            <div class="button-text">
+
+                <strong>
+                    إنشاء منشور
+                </strong>
+
+                <span>
+                    ابدأ منشورًا جديدًا
+                </span>
+
+            </div>
+
+            <div class="arrow">
+                ←
+            </div>
+
+        </button>
+
+
+        <!-- QUICK ACTIONS -->
+
+        <section class="section">
+
+            <div class="section-title">
+                <span>⚡</span>
+                إجراءات سريعة
+            </div>
+
+            <div class="quick-grid">
+
+                <button class="quick-card">
+
+                    <div class="quick-icon purple">
+                        📋
+                    </div>
+
+                    <strong>
+                        منشوراتي
+                    </strong>
+
+                    <span>
+                        المحفوظة
+                    </span>
+
+                </button>
+
+
+                <button class="quick-card">
+
+                    <div class="quick-icon blue">
+                        ⏰
+                    </div>
+
+                    <strong>
+                        المجدولة
+                    </strong>
+
+                    <span>
+                        قيد الانتظار
+                    </span>
+
+                </button>
+
+
+                <button class="quick-card">
+
+                    <div class="quick-icon cyan">
+                        📊
+                    </div>
+
+                    <strong>
+                        الإحصائيات
+                    </strong>
+
+                    <span>
+                        أداء القناة
+                    </span>
+
+                </button>
+
+
+                <button class="quick-card">
+
+                    <div class="quick-icon orange">
+                        ⚙️
+                    </div>
+
+                    <strong>
+                        الإعدادات
+                    </strong>
+
+                    <span>
+                        تخصيص النظام
+                    </span>
+
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- FEATURES -->
+
+        <section class="features">
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    🔗
+                </div>
+
+                <div>
+                    <strong>
+                        Smart Links
+                    </strong>
+
+                    <span>
+                        اكتشاف الروابط تلقائيًا
+                    </span>
+                </div>
+
+            </div>
+
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    🚀
+                </div>
+
+                <div>
+                    <strong>
+                        Fast Publishing
+                    </strong>
+
+                    <span>
+                        نشر سريع وآمن
+                    </span>
+                </div>
+
+            </div>
+
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    🛡️
+                </div>
+
+                <div>
+                    <strong>
+                        Secure
+                    </strong>
+
+                    <span>
+                        وصول المدير فقط
+                    </span>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- FOOTER -->
+
+        <footer>
+
+            <div class="footer-line"></div>
+
+            <span>
+                💎 Telegram Publisher
+            </span>
+
+            <small>
+                Crafted for Telegram
+            </small>
+
+        </footer>
+
+    </main>
+
+
+    <!-- CREATE POST MODAL -->
+
+    <div
+        class="modal"
+        id="postModal"
+    >
+
+        <div class="modal-overlay"></div>
+
+        <div class="modal-box">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span class="small-label">
+                        CREATE
+                    </span>
+
+                    <h2>
+                        ✨ منشور جديد
+                    </h2>
+
+                </div>
+
+                <button
+                    class="close-button"
+                    id="closeModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <!-- TEXT -->
+
+            <label>
+                نص المنشور
+            </label>
+
+            <textarea
+                id="postText"
+                placeholder="اكتب محتوى المنشور هنا..."
+                maxlength="4096"
+            ></textarea>
+
+
+            <!-- SMART LINK -->
+
+            <div class="smart-box">
+
+                <div class="smart-icon">
+                    🔗
+                </div>
+
+                <div>
+
+                    <strong>
+                        Smart Links
+                    </strong>
+
+                    <p>
+                        سيتم اكتشاف الروابط و
+                        @username تلقائيًا وتحويلها
+                        إلى أزرار.
+                    </p>
+
+                </div>
+
+                <div class="switch active">
+                    <span></span>
+                </div>
+
+            </div>
+
+
+            <!-- BUTTONS -->
+
+            <div class="custom-buttons">
+
+                <div class="custom-title">
+
+                    <span>
+                        🔘 الأزرار
+                    </span>
+
+                    <button id="addButton">
+                        + إضافة
+                    </button>
+
+                </div>
+
+                <div id="buttonList"></div>
+
+            </div>
+
+
+            <!-- PREVIEW -->
+
+            <div class="preview-title">
+                👀 المعاينة
+            </div>
+
+            <div
+                class="telegram-preview"
+                id="preview"
+            >
+
+                <div class="preview-avatar">
+                    ⚡
+                </div>
+
+                <div class="preview-content">
+
+                    <strong>
+                        Telegram Publisher
+                    </strong>
+
+                    <div
+                        id="previewText"
+                        class="preview-text"
+                    >
+                        اكتب النص لمشاهدة المعاينة...
+                    </div>
+
+                    <div
+                        id="previewButtons"
+                        class="preview-buttons"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTION -->
+
+            <button
+                class="publish-button"
+                id="publishButton"
+            >
+
+                🚀
+                نشر المنشور
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
+```
