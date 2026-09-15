@@ -35,6 +35,7 @@ from database import (
     get_language,
     add_channel,
     get_channels,
+    get_channel,
     delete_channel,
     create_post,
     get_posts,
