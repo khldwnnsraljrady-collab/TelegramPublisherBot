@@ -1,12 +1,14 @@
+```python
 import asyncio
 import json
 import logging
 import os
 import secrets
-from pathlib import Path
-from urllib.parse import parse_qsl
 import hashlib
 import hmac
+
+from pathlib import Path
+from urllib.parse import parse_qsl
 
 from aiohttp import web
 from dotenv import load_dotenv
@@ -64,7 +66,6 @@ UPLOAD_DIR = BASE_DIR / "uploads"
 
 UPLOAD_DIR.mkdir(exist_ok=True)
 
-
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN is missing")
 
@@ -109,7 +110,7 @@ TEXTS = {
         ),
         "choose_language": "🌐 اختر لغة البوت:",
         "language_saved": "✅ تم اختيار اللغة العربية.",
-        "english_saved": "✅ English selected.",
+        "english_saved": "✅ تم اختيار اللغة الإنجليزية.",
         "open_panel": "⚡ فتح لوحة التحكم",
         "channels": "📢 قنواتي",
         "add_channel": "➕ إضافة قناة",
@@ -123,14 +124,17 @@ TEXTS = {
             "➕ <b>إضافة قناة</b>\n\n"
             "1. أضف البوت إلى قناتك كمسؤول.\n"
             "2. امنحه صلاحية نشر الرسائل.\n"
-            "3. أرسل اسم القناة بهذا الشكل:\n\n"
+            "3. أرسل Username القناة بهذا الشكل:\n\n"
             "<code>@yourchannel</code>"
         ),
-        "channel_added": "✅ تم إضافة القناة بنجاح:\n<b>{}</b>",
+        "channel_added": (
+            "✅ تم إضافة القناة بنجاح:\n"
+            "<b>{}</b>"
+        ),
         "channel_not_found": (
             "❌ لم أتمكن من الوصول إلى القناة.\n\n"
             "تأكد أن البوت موجود في القناة كمسؤول "
-            "وأن اسم القناة صحيح."
+            "وأن Username القناة صحيح."
         ),
         "not_admin": (
             "❌ البوت ليس لديه صلاحية الإدارة في هذه القناة."
@@ -177,7 +181,10 @@ TEXTS = {
             "3. Send the channel username like this:\n\n"
             "<code>@yourchannel</code>"
         ),
-        "channel_added": "✅ Channel added successfully:\n<b>{}</b>",
+        "channel_added": (
+            "✅ Channel added successfully:\n"
+            "<b>{}</b>"
+        ),
         "channel_not_found": (
             "❌ I couldn't access this channel.\n\n"
             "Make sure the bot is an administrator "
@@ -241,16 +248,26 @@ def main_keyboard(language):
             [
                 KeyboardButton(
                     text=t(language, "open_panel"),
-                    web_app=WebAppInfo(url=WEB_APP_URL)
+                    web_app=WebAppInfo(
+                        url=WEB_APP_URL
+                    )
                 )
             ],
             [
-                KeyboardButton(text=t(language, "channels")),
-                KeyboardButton(text=t(language, "add_channel"))
+                KeyboardButton(
+                    text=t(language, "channels")
+                ),
+                KeyboardButton(
+                    text=t(language, "add_channel")
+                )
             ],
             [
-                KeyboardButton(text=t(language, "help")),
-                KeyboardButton(text=t(language, "language"))
+                KeyboardButton(
+                    text=t(language, "help")
+                ),
+                KeyboardButton(
+                    text=t(language, "language")
+                )
             ]
         ],
         resize_keyboard=True,
@@ -265,9 +282,12 @@ def main_keyboard(language):
 @dp.message(CommandStart())
 async def start_handler(message: Message):
 
-    user = get_user(message.from_user.id)
+    user = get_user(
+        message.from_user.id
+    )
 
     if not user:
+
         create_user(
             message.from_user.id,
             "ar"
@@ -294,11 +314,17 @@ async def start_handler(message: Message):
 # =========================================================
 
 @dp.callback_query(F.data.startswith("lang_"))
-async def language_callback(callback: CallbackQuery):
+async def language_callback(
+    callback: CallbackQuery
+):
 
-    language = callback.data.replace("lang_", "")
+    language = callback.data.replace(
+        "lang_",
+        ""
+    )
 
     if language not in ("ar", "en"):
+
         await callback.answer()
         return
 
@@ -307,15 +333,21 @@ async def language_callback(callback: CallbackQuery):
         language
     )
 
-    await callback.message.delete()
+    try:
+        await callback.message.delete()
+    except Exception:
+        pass
 
     if language == "ar":
+
         text = (
             f"{t(language, 'welcome_title')}\n\n"
             f"{t(language, 'language_saved')}\n\n"
             f"{t(language, 'welcome')}"
         )
+
     else:
+
         text = (
             f"{t(language, 'welcome_title')}\n\n"
             f"{t(language, 'english_saved')}\n\n"
@@ -331,11 +363,20 @@ async def language_callback(callback: CallbackQuery):
 
 
 # =========================================================
-# LANGUAGE BUTTON
+# CHANGE LANGUAGE
 # =========================================================
 
-@dp.message(F.text.in_(["🌐 تغيير اللغة", "🌐 Change language"]))
-async def change_language(message: Message):
+@dp.message(
+    F.text.in_(
+        [
+            "🌐 تغيير اللغة",
+            "🌐 Change language"
+        ]
+    )
+)
+async def change_language(
+    message: Message
+):
 
     await message.answer(
         "🌐 اختر اللغة / Choose language:",
@@ -347,8 +388,17 @@ async def change_language(message: Message):
 # HELP
 # =========================================================
 
-@dp.message(F.text.in_(["ℹ️ المساعدة", "ℹ️ Help"]))
-async def help_handler(message: Message):
+@dp.message(
+    F.text.in_(
+        [
+            "ℹ️ المساعدة",
+            "ℹ️ Help"
+        ]
+    )
+)
+async def help_handler(
+    message: Message
+):
 
     language = get_language(
         message.from_user.id
@@ -364,8 +414,17 @@ async def help_handler(message: Message):
 # =========================================================
 
 @dp.message(Command("addchannel"))
-@dp.message(F.text.in_(["➕ إضافة قناة", "➕ Add Channel"]))
-async def add_channel_handler(message: Message):
+@dp.message(
+    F.text.in_(
+        [
+            "➕ إضافة قناة",
+            "➕ Add Channel"
+        ]
+    )
+)
+async def add_channel_handler(
+    message: Message
+):
 
     language = get_language(
         message.from_user.id
@@ -381,11 +440,17 @@ async def add_channel_handler(message: Message):
 # =========================================================
 
 @dp.message(F.text.startswith("@"))
-async def channel_username_handler(message: Message):
+async def channel_username_handler(
+    message: Message
+):
 
     username = message.text.strip()
 
-    if " " in username or len(username) < 2:
+    if (
+        not username.startswith("@")
+        or " " in username
+        or len(username) < 2
+    ):
         return
 
     language = get_language(
@@ -394,61 +459,186 @@ async def channel_username_handler(message: Message):
 
     try:
 
-        chat = await bot.get_chat(username)
+        logger.info(
+            "Checking channel %s for user %s",
+            username,
+            message.from_user.id
+        )
+
+        # -------------------------------------------------
+        # Get channel
+        # -------------------------------------------------
+
+        chat = await bot.get_chat(
+            chat_id=username
+        )
+
+        logger.info(
+            "Channel found: id=%s title=%s username=%s type=%s",
+            chat.id,
+            chat.title,
+            chat.username,
+            chat.type
+        )
+
+        # -------------------------------------------------
+        # Make sure it is a channel
+        # -------------------------------------------------
 
         if chat.type != "channel":
 
             await message.answer(
-                "❌ هذا ليس Channel."
+                "❌ <b>هذا ليس Channel.</b>\n\n"
+                "أرسل Username القناة بهذا الشكل:\n"
+                "<code>@yourchannel</code>"
             )
 
             return
 
+        # -------------------------------------------------
+        # Get bot information
+        # -------------------------------------------------
+
         me = await bot.get_me()
+
+        # -------------------------------------------------
+        # Check bot membership
+        # -------------------------------------------------
 
         member = await bot.get_chat_member(
             chat_id=chat.id,
             user_id=me.id
         )
 
-        if member.status not in (
-            ChatMemberStatus.ADMINISTRATOR,
-            ChatMemberStatus.OWNER
-        ):
+        logger.info(
+            "Bot membership: status=%s",
+            member.status
+        )
+
+        # -------------------------------------------------
+        # Bot must be administrator
+        #
+        # IMPORTANT:
+        # aiogram 3.24.0 ChatMemberStatus does NOT
+        # contain OWNER.
+        # -------------------------------------------------
+
+        if member.status != ChatMemberStatus.ADMINISTRATOR:
 
             await message.answer(
-                t(language, "not_admin")
+                "❌ <b>البوت ليس مسؤولًا في هذه القناة.</b>\n\n"
+                "أضف البوت كمسؤول في القناة ثم حاول مرة أخرى."
             )
 
             return
 
+        # -------------------------------------------------
+        # Check posting permission
+        # -------------------------------------------------
+
+        can_post = getattr(
+            member,
+            "can_post_messages",
+            False
+        )
+
+        logger.info(
+            "Bot can_post_messages=%s",
+            can_post
+        )
+
+        if not can_post:
+
+            await message.answer(
+                "❌ <b>البوت مسؤول، لكن لا يملك صلاحية نشر الرسائل.</b>\n\n"
+                "اذهب إلى:\n"
+                "القناة → إدارة القناة → المسؤولون → Telegram Publisher\n\n"
+                "وفعّل صلاحية:\n"
+                "✅ <b>نشر الرسائل</b>"
+            )
+
+            return
+
+        # -------------------------------------------------
+        # Channel username
+        # -------------------------------------------------
+
+        channel_username = (
+            f"@{chat.username}"
+            if chat.username
+            else username
+        )
+
+        # -------------------------------------------------
+        # Save channel
+        # -------------------------------------------------
+
         add_channel(
             telegram_id=message.from_user.id,
             channel_id=str(chat.id),
-            username=(
-                f"@{chat.username}"
-                if chat.username
-                else username
-            ),
-            title=chat.title or ""
+            username=channel_username,
+            title=chat.title or username
         )
 
+        logger.info(
+            "Channel successfully connected: "
+            "user=%s channel=%s id=%s",
+            message.from_user.id,
+            channel_username,
+            chat.id
+        )
+
+        # -------------------------------------------------
+        # Success
+        # -------------------------------------------------
+
         await message.answer(
-            t(language, "channel_added").format(
-                chat.title or username
-            ),
+            "✅ <b>تمت إضافة القناة بنجاح!</b>\n\n"
+            f"📢 <b>{chat.title or 'Channel'}</b>\n"
+            f"🔗 <code>{channel_username}</code>\n\n"
+            "يمكنك الآن استخدامها للنشر من لوحة التحكم.",
             reply_markup=main_keyboard(language)
         )
+
+    # -----------------------------------------------------
+    # Telegram Bad Request
+    # -----------------------------------------------------
+
+    except TelegramBadRequest as e:
+
+        error_text = str(e)
+
+        logger.error(
+            "TelegramBadRequest while adding channel %s: %s",
+            username,
+            error_text
+        )
+
+        if "chat not found" in error_text.lower():
+
+            await message.answer(
+                "❌ <b>لم يتم العثور على القناة.</b>\n\n"
+                "تأكد من Username القناة.\n\n"
+                "مثال:\n"
+                "<code>@KhaldounSoft</code>"
+            )
+
+        else:
+
+            await message.answer(
+                "❌ <b>حدث خطأ من Telegram.</b>\n\n"
+                f"<code>{error_text[:500]}</code>"
+            )
 
     except Exception as e:
 
         logger.exception(
-            "Channel verification failed: %s",
-            e
+            "Channel verification failed"
         )
 
         await message.answer(
-            t(language, "channel_not_found")
+            "❌ <b>حدث خطأ أثناء التحقق من القناة.</b>\n\n"
+            "راجع Logs في Render لمعرفة السبب."
         )
 
 
@@ -456,8 +646,17 @@ async def channel_username_handler(message: Message):
 # MY CHANNELS
 # =========================================================
 
-@dp.message(F.text.in_(["📢 قنواتي", "📢 My Channels"]))
-async def my_channels_handler(message: Message):
+@dp.message(
+    F.text.in_(
+        [
+            "📢 قنواتي",
+            "📢 My Channels"
+        ]
+    )
+)
+async def my_channels_handler(
+    message: Message
+):
 
     language = get_language(
         message.from_user.id
@@ -475,7 +674,10 @@ async def my_channels_handler(message: Message):
 
         return
 
-    text = t(language, "channel_list")
+    text = t(
+        language,
+        "channel_list"
+    )
 
     buttons = []
 
@@ -486,16 +688,21 @@ async def my_channels_handler(message: Message):
         if not username:
             username = channel["title"]
 
-        text += f"• <b>{username}</b>\n"
+        text += (
+            f"• <b>{username}</b>\n"
+        )
 
-        buttons.append([
-            InlineKeyboardButton(
-                text=f"🗑️ {username}",
-                callback_data=(
-                    f"delete_channel:{channel['channel_id']}"
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text=f"🗑️ {username}",
+                    callback_data=(
+                        f"delete_channel:"
+                        f"{channel['channel_id']}"
+                    )
                 )
-            )
-        ])
+            ]
+        )
 
     await message.answer(
         text,
@@ -509,7 +716,9 @@ async def my_channels_handler(message: Message):
 # DELETE CHANNEL
 # =========================================================
 
-@dp.callback_query(F.data.startswith("delete_channel:"))
+@dp.callback_query(
+    F.data.startswith("delete_channel:")
+)
 async def delete_channel_callback(
     callback: CallbackQuery
 ):
@@ -539,7 +748,9 @@ async def delete_channel_callback(
 # TELEGRAM WEB APP AUTH
 # =========================================================
 
-def validate_init_data(init_data: str):
+def validate_init_data(
+    init_data: str
+):
 
     if not init_data:
         return None
@@ -585,7 +796,10 @@ def validate_init_data(init_data: str):
             return None
 
         user_data = json.loads(
-            data.get("user", "{}")
+            data.get(
+                "user",
+                "{}"
+            )
         )
 
         return user_data
@@ -603,7 +817,9 @@ def validate_init_data(init_data: str):
 # WEB API AUTH
 # =========================================================
 
-def authenticate_request(request):
+def authenticate_request(
+    request
+):
 
     init_data = request.headers.get(
         "X-Telegram-Init-Data",
@@ -619,13 +835,16 @@ def authenticate_request(request):
 # API: CHANNELS
 # =========================================================
 
-async def api_channels(request):
+async def api_channels(
+    request
+):
 
     user = authenticate_request(
         request
     )
 
     if not user:
+
         return web.json_response(
             {
                 "ok": False,
@@ -646,29 +865,36 @@ async def api_channels(request):
 
     for channel in channels:
 
-        result.append({
-            "id": channel["channel_id"],
-            "username": channel["username"],
-            "title": channel["title"]
-        })
+        result.append(
+            {
+                "id": channel["channel_id"],
+                "username": channel["username"],
+                "title": channel["title"]
+            }
+        )
 
-    return web.json_response({
-        "ok": True,
-        "channels": result
-    })
+    return web.json_response(
+        {
+            "ok": True,
+            "channels": result
+        }
+    )
 
 
 # =========================================================
 # API: UPLOAD
 # =========================================================
 
-async def api_upload(request):
+async def api_upload(
+    request
+):
 
     user = authenticate_request(
         request
     )
 
     if not user:
+
         return web.json_response(
             {
                 "ok": False,
@@ -686,6 +912,7 @@ async def api_upload(request):
     field = await reader.next()
 
     if not field:
+
         return web.json_response(
             {
                 "ok": False,
@@ -694,7 +921,9 @@ async def api_upload(request):
             status=400
         )
 
-    original_name = field.filename or "file"
+    original_name = (
+        field.filename or "file"
+    )
 
     extension = Path(
         original_name
@@ -740,73 +969,130 @@ async def api_upload(request):
         + extension
     )
 
-    file_path = UPLOAD_DIR / random_name
+    file_path = (
+        UPLOAD_DIR / random_name
+    )
 
     size = 0
     max_size = 50 * 1024 * 1024
 
-    with open(file_path, "wb") as f:
+    try:
 
-        while True:
+        with open(
+            file_path,
+            "wb"
+        ) as f:
 
-            chunk = await field.read_chunk(
-                size=1024 * 1024
-            )
+            while True:
 
-            if not chunk:
-                break
-
-            size += len(chunk)
-
-            if size > max_size:
-
-                try:
-                    file_path.unlink()
-                except Exception:
-                    pass
-
-                return web.json_response(
-                    {
-                        "ok": False,
-                        "error": "File too large. Maximum 50 MB."
-                    },
-                    status=413
+                chunk = await field.read_chunk(
+                    size=1024 * 1024
                 )
 
-            f.write(chunk)
+                if not chunk:
+                    break
+
+                size += len(chunk)
+
+                if size > max_size:
+
+                    try:
+                        file_path.unlink()
+                    except Exception:
+                        pass
+
+                    return web.json_response(
+                        {
+                            "ok": False,
+                            "error": (
+                                "File too large. "
+                                "Maximum 50 MB."
+                            )
+                        },
+                        status=413
+                    )
+
+                f.write(chunk)
+
+    except Exception:
+
+        try:
+            file_path.unlink()
+        except Exception:
+            pass
+
+        logger.exception(
+            "File upload failed"
+        )
+
+        return web.json_response(
+            {
+                "ok": False,
+                "error": "Upload failed"
+            },
+            status=500
+        )
 
     content_type = field.headers.get(
         "Content-Type",
         ""
     )
 
-    if content_type.startswith("image/"):
+    if content_type.startswith(
+        "image/"
+    ):
+
         media_type = "photo"
 
-    elif content_type.startswith("video/"):
+    elif content_type.startswith(
+        "video/"
+    ):
+
         media_type = "video"
 
-    elif content_type.startswith("audio/"):
+    elif content_type.startswith(
+        "audio/"
+    ):
+
         media_type = "audio"
 
+    elif (
+        extension == ".gif"
+    ):
+
+        media_type = "animation"
+
     else:
+
         media_type = "document"
 
-    return web.json_response({
-        "ok": True,
-        "telegram_id": telegram_id,
-        "filename": original_name,
-        "path": str(file_path),
-        "media_type": media_type,
-        "size": size
-    })
+    logger.info(
+        "File uploaded: user=%s name=%s type=%s size=%s",
+        telegram_id,
+        original_name,
+        media_type,
+        size
+    )
+
+    return web.json_response(
+        {
+            "ok": True,
+            "telegram_id": telegram_id,
+            "filename": original_name,
+            "path": str(file_path),
+            "media_type": media_type,
+            "size": size
+        }
+    )
 
 
 # =========================================================
 # BUILD INLINE BUTTONS
 # =========================================================
 
-def build_inline_keyboard(buttons):
+def build_inline_keyboard(
+    buttons
+):
 
     if not buttons:
         return None
@@ -815,19 +1101,25 @@ def build_inline_keyboard(buttons):
 
     for button in buttons:
 
-        text = button.get("text")
+        text = button.get(
+            "text"
+        )
 
-        url = button.get("url")
+        url = button.get(
+            "url"
+        )
 
         if not text or not url:
             continue
 
-        keyboard.append([
-            InlineKeyboardButton(
-                text=text[:64],
-                url=url
-            )
-        ])
+        keyboard.append(
+            [
+                InlineKeyboardButton(
+                    text=text[:64],
+                    url=url
+                )
+            ]
+        )
 
     if not keyboard:
         return None
@@ -838,43 +1130,65 @@ def build_inline_keyboard(buttons):
 
 
 # =========================================================
-# AUTO LINK DETECTION
+# NORMALIZE BUTTONS
 # =========================================================
 
-def normalize_buttons(buttons):
+def normalize_buttons(
+    buttons
+):
 
-    if not isinstance(buttons, list):
+    if not isinstance(
+        buttons,
+        list
+    ):
         return []
 
     result = []
 
     for button in buttons:
 
-        if not isinstance(button, dict):
+        if not isinstance(
+            button,
+            dict
+        ):
             continue
 
         text = str(
-            button.get("text", "")
+            button.get(
+                "text",
+                ""
+            )
         ).strip()
 
         url = str(
-            button.get("url", "")
+            button.get(
+                "url",
+                ""
+            )
         ).strip()
 
         if not text or not url:
             continue
 
         if not (
-            url.startswith("http://")
-            or url.startswith("https://")
-            or url.startswith("tg://")
+            url.startswith(
+                "http://"
+            )
+            or url.startswith(
+                "https://"
+            )
+            or url.startswith(
+                "tg://"
+            )
         ):
             continue
 
-        result.append({
-            "text": text,
-            "url": url
-        })
+        result.append(
+            {
+                "text": text,
+                "url": url
+            }
+        )
 
     return result
 
@@ -898,6 +1212,7 @@ async def publish_post(
     )
 
     if not channel:
+
         raise RuntimeError(
             "Channel is not connected to this user"
         )
@@ -906,9 +1221,15 @@ async def publish_post(
         buttons
     )
 
-    target = channel["channel_id"]
+    target = channel[
+        "channel_id"
+    ]
 
     text = text or ""
+
+    # -----------------------------------------------------
+    # PHOTO
+    # -----------------------------------------------------
 
     if media_type == "photo":
 
@@ -917,9 +1238,17 @@ async def publish_post(
             photo=FSInputFile(
                 media_path
             ),
-            caption=text[:1024] if text else None,
+            caption=(
+                text[:1024]
+                if text
+                else None
+            ),
             reply_markup=keyboard
         )
+
+    # -----------------------------------------------------
+    # VIDEO
+    # -----------------------------------------------------
 
     elif media_type == "video":
 
@@ -928,9 +1257,17 @@ async def publish_post(
             video=FSInputFile(
                 media_path
             ),
-            caption=text[:1024] if text else None,
+            caption=(
+                text[:1024]
+                if text
+                else None
+            ),
             reply_markup=keyboard
         )
+
+    # -----------------------------------------------------
+    # AUDIO
+    # -----------------------------------------------------
 
     elif media_type == "audio":
 
@@ -939,37 +1276,78 @@ async def publish_post(
             audio=FSInputFile(
                 media_path
             ),
-            caption=text[:1024] if text else None,
+            caption=(
+                text[:1024]
+                if text
+                else None
+            ),
             reply_markup=keyboard
         )
 
+    # -----------------------------------------------------
+    # ANIMATION / GIF
+    # -----------------------------------------------------
+
+    elif media_type == "animation":
+
+        await bot.send_animation(
+            chat_id=target,
+            animation=FSInputFile(
+                media_path
+            ),
+            caption=(
+                text[:1024]
+                if text
+                else None
+            ),
+            reply_markup=keyboard
+        )
+
+    # -----------------------------------------------------
+    # DOCUMENT
+    # -----------------------------------------------------
+
+    elif media_type == "document":
+
+        await bot.send_document(
+            chat_id=target,
+            document=FSInputFile(
+                media_path
+            ),
+            caption=(
+                text[:1024]
+                if text
+                else None
+            ),
+            reply_markup=keyboard
+        )
+
+    # -----------------------------------------------------
+    # TEXT
+    # -----------------------------------------------------
+
     else:
 
-        if media_type == "document":
+        if not text:
 
-            await bot.send_document(
-                chat_id=target,
-                document=FSInputFile(
-                    media_path
-                ),
-                caption=text[:1024] if text else None,
-                reply_markup=keyboard
+            raise RuntimeError(
+                "Post is empty"
             )
 
-        else:
-
-            await bot.send_message(
-                chat_id=target,
-                text=text,
-                reply_markup=keyboard
-            )
+        await bot.send_message(
+            chat_id=target,
+            text=text,
+            reply_markup=keyboard
+        )
 
 
 # =========================================================
 # API: PUBLISH
 # =========================================================
 
-async def api_publish(request):
+async def api_publish(
+    request
+):
 
     user = authenticate_request(
         request
@@ -1004,11 +1382,17 @@ async def api_publish(request):
         )
 
     channel_id = str(
-        data.get("channel_id", "")
+        data.get(
+            "channel_id",
+            ""
+        )
     )
 
     text = str(
-        data.get("text", "")
+        data.get(
+            "text",
+            ""
+        )
     ).strip()
 
     media_type = data.get(
@@ -1020,7 +1404,10 @@ async def api_publish(request):
     )
 
     buttons = normalize_buttons(
-        data.get("buttons", [])
+        data.get(
+            "buttons",
+            []
+        )
     )
 
     if not channel_id:
@@ -1043,13 +1430,19 @@ async def api_publish(request):
             status=400
         )
 
+    # -----------------------------------------------------
+    # Validate uploaded file path
+    # -----------------------------------------------------
+
     if media_path:
 
         path = Path(
             media_path
         ).resolve()
 
-        upload_root = UPLOAD_DIR.resolve()
+        upload_root = (
+            UPLOAD_DIR.resolve()
+        )
 
         if upload_root not in path.parents:
 
@@ -1071,7 +1464,9 @@ async def api_publish(request):
                 status=400
             )
 
-        media_path = str(path)
+        media_path = str(
+            path
+        )
 
     try:
 
@@ -1097,19 +1492,45 @@ async def api_publish(request):
             status="published"
         )
 
+        # -------------------------------------------------
+        # Delete uploaded file after successful publishing
+        # -------------------------------------------------
+
         if media_path:
 
             try:
+
                 Path(
                     media_path
                 ).unlink()
-            except Exception:
-                pass
 
-        return web.json_response({
-            "ok": True,
-            "post_id": post_id
-        })
+            except Exception:
+
+                logger.warning(
+                    "Could not delete media file: %s",
+                    media_path
+                )
+
+        return web.json_response(
+            {
+                "ok": True,
+                "post_id": post_id
+            }
+        )
+
+    except TelegramBadRequest as e:
+
+        logger.exception(
+            "Telegram publishing error"
+        )
+
+        return web.json_response(
+            {
+                "ok": False,
+                "error": str(e)
+            },
+            status=400
+        )
 
     except Exception as e:
 
@@ -1130,7 +1551,9 @@ async def api_publish(request):
 # API: POSTS
 # =========================================================
 
-async def api_posts(request):
+async def api_posts(
+    request
+):
 
     user = authenticate_request(
         request
@@ -1158,38 +1581,48 @@ async def api_posts(request):
 
     for post in posts:
 
-        result.append({
-            "id": post["id"],
-            "channel_id": post["channel_id"],
-            "text": post["text"],
-            "media_type": post["media_type"],
-            "status": post["status"],
-            "created_at": post["created_at"]
-        })
+        result.append(
+            {
+                "id": post["id"],
+                "channel_id": post["channel_id"],
+                "text": post["text"],
+                "media_type": post["media_type"],
+                "status": post["status"],
+                "created_at": post["created_at"]
+            }
+        )
 
-    return web.json_response({
-        "ok": True,
-        "posts": result
-    })
+    return web.json_response(
+        {
+            "ok": True,
+            "posts": result
+        }
+    )
 
 
 # =========================================================
 # WEB PAGE
 # =========================================================
 
-async def index_handler(request):
+async def index_handler(
+    request
+):
 
     return web.FileResponse(
         WEB_DIR / "index.html"
     )
 
 
-async def health_handler(request):
+async def health_handler(
+    request
+):
 
-    return web.json_response({
-        "status": "ok",
-        "service": "Telegram Publisher"
-    })
+    return web.json_response(
+        {
+            "status": "ok",
+            "service": "Telegram Publisher"
+        }
+    )
 
 
 # =========================================================
@@ -1202,15 +1635,27 @@ async def start_web_server():
         client_max_size=60 * 1024 * 1024
     )
 
+    # -----------------------------------------------------
+    # Main page
+    # -----------------------------------------------------
+
     app.router.add_get(
         "/",
         index_handler
     )
 
+    # -----------------------------------------------------
+    # Health
+    # -----------------------------------------------------
+
     app.router.add_get(
         "/health",
         health_handler
     )
+
+    # -----------------------------------------------------
+    # APIs
+    # -----------------------------------------------------
 
     app.router.add_get(
         "/api/channels",
@@ -1231,6 +1676,10 @@ async def start_web_server():
         "/api/posts",
         api_posts
     )
+
+    # -----------------------------------------------------
+    # Static files
+    # -----------------------------------------------------
 
     app.router.add_static(
         "/",
@@ -1266,14 +1715,21 @@ async def start_web_server():
 
 async def main():
 
+    # Initialize database
     init_db()
 
+    # Start web server
     await start_web_server()
 
     logger.info(
         "Telegram Publisher Bot started"
     )
 
+    logger.info(
+        "Start polling"
+    )
+
+    # Start Telegram polling
     await dp.start_polling(
         bot
     )
@@ -1284,4 +1740,16 @@ async def main():
 # =========================================================
 
 if __name__ == "__main__":
-    asyncio.run(main())
+
+    try:
+
+        asyncio.run(
+            main()
+        )
+
+    except KeyboardInterrupt:
+
+        logger.info(
+            "Bot stopped manually"
+        )
+```
