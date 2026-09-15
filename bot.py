@@ -1,4 +1,3 @@
-```python
 import asyncio
 import logging
 import os
@@ -1098,4 +1097,3 @@ if __name__ == "__main__":
         logger.info(
             "Bot stopped by user."
         )
-```
