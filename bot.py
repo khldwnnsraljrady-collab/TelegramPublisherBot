@@ -1099,7 +1099,7 @@
 #         )
 
 
-```python
+python
 import asyncio
 import json
 import logging
@@ -1691,4 +1691,3 @@ if __name__ == "__main__":
         logger.info(
             "Bot stopped."
         )
-```
