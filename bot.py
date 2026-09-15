@@ -1,7 +1,9 @@
+```python
 import os
 import asyncio
 import logging
 from html import escape
+from aiohttp import web
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
@@ -25,6 +27,7 @@ load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 CHANNEL_ID = os.getenv("CHANNEL_ID")
+PORT = int(os.getenv("PORT", "10000"))
 
 
 if not BOT_TOKEN:
@@ -64,10 +67,9 @@ dp = Dispatcher()
 
 
 # =========================================================
-# USER STATES
+# USER DRAFTS
 # =========================================================
 
-# user_id -> post data
 drafts = {}
 
 
@@ -81,15 +83,15 @@ def preview_keyboard():
             [
                 InlineKeyboardButton(
                     text="🚀 نشر في القناة",
-                    callback_data="publish"
+                    callback_data="publish",
                 )
             ],
             [
                 InlineKeyboardButton(
                     text="❌ إلغاء",
-                    callback_data="cancel"
+                    callback_data="cancel",
                 )
-            ]
+            ],
         ]
     )
 
@@ -100,7 +102,7 @@ def main_keyboard():
             [
                 InlineKeyboardButton(
                     text="➕ إنشاء منشور",
-                    callback_data="new_post"
+                    callback_data="new_post",
                 )
             ]
         ]
@@ -146,7 +148,7 @@ async def new_post_handler(callback: CallbackQuery):
     if not is_admin(callback.from_user.id):
         await callback.answer(
             "⛔ غير مسموح",
-            show_alert=True
+            show_alert=True,
         )
         return
 
@@ -180,7 +182,7 @@ async def cancel_command(message: Message):
 
     await message.answer(
         "❌ تم إلغاء المنشور.",
-        reply_markup=main_keyboard()
+        reply_markup=main_keyboard(),
     )
 
 
@@ -220,7 +222,6 @@ async def receive_photo(message: Message):
         return
 
     photo = message.photo[-1]
-
     caption = message.caption or ""
 
     drafts[message.from_user.id] = {
@@ -229,14 +230,16 @@ async def receive_photo(message: Message):
         "caption": caption,
     }
 
+    preview_caption = (
+        "👀 <b>معاينة المنشور:</b>\n\n"
+        f"{escape(caption)}"
+        if caption
+        else "👀 <b>معاينة المنشور</b>"
+    )
+
     await message.answer_photo(
         photo=photo.file_id,
-        caption=(
-            "👀 <b>معاينة المنشور:</b>\n\n"
-            f"{escape(caption)}"
-            if caption
-            else "👀 <b>معاينة المنشور</b>"
-        ),
+        caption=preview_caption,
         reply_markup=preview_keyboard(),
     )
 
@@ -252,7 +255,6 @@ async def receive_video(message: Message):
         return
 
     video = message.video
-
     caption = message.caption or ""
 
     drafts[message.from_user.id] = {
@@ -261,14 +263,16 @@ async def receive_video(message: Message):
         "caption": caption,
     }
 
+    preview_caption = (
+        "👀 <b>معاينة المنشور:</b>\n\n"
+        f"{escape(caption)}"
+        if caption
+        else "👀 <b>معاينة المنشور</b>"
+    )
+
     await message.answer_video(
         video=video.file_id,
-        caption=(
-            "👀 <b>معاينة المنشور:</b>\n\n"
-            f"{escape(caption)}"
-            if caption
-            else "👀 <b>معاينة المنشور</b>"
-        ),
+        caption=preview_caption,
         reply_markup=preview_keyboard(),
     )
 
@@ -283,18 +287,17 @@ async def publish_handler(callback: CallbackQuery):
     if not is_admin(callback.from_user.id):
         await callback.answer(
             "⛔ غير مسموح",
-            show_alert=True
+            show_alert=True,
         )
         return
 
     user_id = callback.from_user.id
-
     post = drafts.get(user_id)
 
     if not post:
         await callback.answer(
             "⚠️ لا يوجد منشور للنشر.",
-            show_alert=True
+            show_alert=True,
         )
         return
 
@@ -355,7 +358,7 @@ async def cancel_handler(callback: CallbackQuery):
     if not is_admin(callback.from_user.id):
         await callback.answer(
             "⛔ غير مسموح",
-            show_alert=True
+            show_alert=True,
         )
         return
 
@@ -386,6 +389,42 @@ async def unknown_message(message: Message):
 
 
 # =========================================================
+# HEALTH SERVER FOR RENDER
+# =========================================================
+
+async def health_check(request):
+    return web.Response(
+        text="Telegram Publisher Bot is running."
+    )
+
+
+async def start_health_server():
+
+    app = web.Application()
+
+    app.router.add_get("/", health_check)
+    app.router.add_get("/health", health_check)
+
+    runner = web.AppRunner(app)
+
+    await runner.setup()
+
+    site = web.TCPSite(
+        runner,
+        host="0.0.0.0",
+        port=PORT,
+    )
+
+    await site.start()
+
+    logger.info(
+        f"Health server started on port {PORT}"
+    )
+
+    return runner
+
+
+# =========================================================
 # MAIN
 # =========================================================
 
@@ -393,8 +432,16 @@ async def main():
 
     logger.info("Bot is starting...")
 
-    await dp.start_polling(bot)
+    health_runner = await start_health_server()
+
+    try:
+        await dp.start_polling(bot)
+
+    finally:
+        await health_runner.cleanup()
+        await bot.session.close()
 
 
 if __name__ == "__main__":
     asyncio.run(main())
+```
