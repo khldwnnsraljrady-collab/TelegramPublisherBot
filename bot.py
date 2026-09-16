@@ -438,209 +438,231 @@ async def add_channel_handler(
 # RECEIVE CHANNEL USERNAME
 # =========================================================
 
+# @dp.message(F.text.startswith("@"))
+# async def channel_username_handler(
+#     message: Message
+# ):
+
+#     username = message.text.strip()
+
+#     if (
+#         not username.startswith("@")
+#         or " " in username
+#         or len(username) < 2
+#     ):
+#         return
+
+#     language = get_language(
+#         message.from_user.id
+#     )
+
+#     try:
+
+#         logger.info(
+#             "Checking channel %s for user %s",
+#             username,
+#             message.from_user.id
+#         )
+
+#         # -------------------------------------------------
+#         # Get channel
+#         # -------------------------------------------------
+
+#         chat = await bot.get_chat(
+#             chat_id=username
+#         )
+
+#         logger.info(
+#             "Channel found: id=%s title=%s username=%s type=%s",
+#             chat.id,
+#             chat.title,
+#             chat.username,
+#             chat.type
+#         )
+
+#         # -------------------------------------------------
+#         # Make sure it is a channel
+#         # -------------------------------------------------
+
+#         if chat.type != "channel":
+
+#             await message.answer(
+#                 "❌ <b>هذا ليس Channel.</b>\n\n"
+#                 "أرسل Username القناة بهذا الشكل:\n"
+#                 "<code>@yourchannel</code>"
+#             )
+
+#             return
+
+#         # -------------------------------------------------
+#         # Get bot information
+#         # -------------------------------------------------
+
+#         me = await bot.get_me()
+
+#         # -------------------------------------------------
+#         # Check bot membership
+#         # -------------------------------------------------
+
+#         member = await bot.get_chat_member(
+#             chat_id=chat.id,
+#             user_id=me.id
+#         )
+
+#         logger.info(
+#             "Bot membership: status=%s",
+#             member.status
+#         )
+
+#         # -------------------------------------------------
+#         # Bot must be administrator
+#         #
+#         # IMPORTANT:
+#         # aiogram 3.24.0 ChatMemberStatus does NOT
+#         # contain OWNER.
+#         # -------------------------------------------------
+
+#         if member.status != ChatMemberStatus.ADMINISTRATOR:
+
+#             await message.answer(
+#                 "❌ <b>البوت ليس مسؤولًا في هذه القناة.</b>\n\n"
+#                 "أضف البوت كمسؤول في القناة ثم حاول مرة أخرى."
+#             )
+
+#             return
+
+#         # -------------------------------------------------
+#         # Check posting permission
+#         # -------------------------------------------------
+
+#         can_post = getattr(
+#             member,
+#             "can_post_messages",
+#             False
+#         )
+
+#         logger.info(
+#             "Bot can_post_messages=%s",
+#             can_post
+#         )
+
+#         if not can_post:
+
+#             await message.answer(
+#                 "❌ <b>البوت مسؤول، لكن لا يملك صلاحية نشر الرسائل.</b>\n\n"
+#                 "اذهب إلى:\n"
+#                 "القناة → إدارة القناة → المسؤولون → Telegram Publisher\n\n"
+#                 "وفعّل صلاحية:\n"
+#                 "✅ <b>نشر الرسائل</b>"
+#             )
+
+#             return
+
+#         # -------------------------------------------------
+#         # Channel username
+#         # -------------------------------------------------
+
+#         channel_username = (
+#             f"@{chat.username}"
+#             if chat.username
+#             else username
+#         )
+
+#         # -------------------------------------------------
+#         # Save channel
+#         # -------------------------------------------------
+
+#         add_channel(
+#             telegram_id=message.from_user.id,
+#             channel_id=str(chat.id),
+#             username=channel_username,
+#             title=chat.title or username
+#         )
+
+#         logger.info(
+#             "Channel successfully connected: "
+#             "user=%s channel=%s id=%s",
+#             message.from_user.id,
+#             channel_username,
+#             chat.id
+#         )
+
+#         # -------------------------------------------------
+#         # Success
+#         # -------------------------------------------------
+
+#         await message.answer(
+#             "✅ <b>تمت إضافة القناة بنجاح!</b>\n\n"
+#             f"📢 <b>{chat.title or 'Channel'}</b>\n"
+#             f"🔗 <code>{channel_username}</code>\n\n"
+#             "يمكنك الآن استخدامها للنشر من لوحة التحكم.",
+#             reply_markup=main_keyboard(language)
+#         )
+
+#     # -----------------------------------------------------
+#     # Telegram Bad Request
+#     # -----------------------------------------------------
+
+#     except TelegramBadRequest as e:
+
+#         error_text = str(e)
+
+#         logger.error(
+#             "TelegramBadRequest while adding channel %s: %s",
+#             username,
+#             error_text
+#         )
+
+#         if "chat not found" in error_text.lower():
+
+#             await message.answer(
+#                 "❌ <b>لم يتم العثور على القناة.</b>\n\n"
+#                 "تأكد من Username القناة.\n\n"
+#                 "مثال:\n"
+#                 "<code>@KhaldounSoft</code>"
+#             )
+
+#         else:
+
+#             await message.answer(
+#                 "❌ <b>حدث خطأ من Telegram.</b>\n\n"
+#                 f"<code>{error_text[:500]}</code>"
+#             )
+
+#     except Exception as e:
+
+#         logger.exception(
+#             "Channel verification failed"
+#         )
+
+#         await message.answer(
+#             "❌ <b>حدث خطأ أثناء التحقق من القناة.</b>\n\n"
+#             "راجع Logs في Render لمعرفة السبب."
+#         )
+
+
 @dp.message(F.text.startswith("@"))
-async def channel_username_handler(
-    message: Message
-):
+async def channel_username_handler(message: Message):
 
-    username = message.text.strip()
+    language = get_language(message.from_user.id)
 
-    if (
-        not username.startswith("@")
-        or " " in username
-        or len(username) < 2
-    ):
-        return
-
-    language = get_language(
-        message.from_user.id
+    success, msg, channel = await verify_and_add_channel(
+        message.from_user.id,
+        message.text.strip()
     )
 
-    try:
+    if not success:
+        await message.answer(f"❌ <b>{msg}</b>")
+        return
 
-        logger.info(
-            "Checking channel %s for user %s",
-            username,
-            message.from_user.id
-        )
-
-        # -------------------------------------------------
-        # Get channel
-        # -------------------------------------------------
-
-        chat = await bot.get_chat(
-            chat_id=username
-        )
-
-        logger.info(
-            "Channel found: id=%s title=%s username=%s type=%s",
-            chat.id,
-            chat.title,
-            chat.username,
-            chat.type
-        )
-
-        # -------------------------------------------------
-        # Make sure it is a channel
-        # -------------------------------------------------
-
-        if chat.type != "channel":
-
-            await message.answer(
-                "❌ <b>هذا ليس Channel.</b>\n\n"
-                "أرسل Username القناة بهذا الشكل:\n"
-                "<code>@yourchannel</code>"
-            )
-
-            return
-
-        # -------------------------------------------------
-        # Get bot information
-        # -------------------------------------------------
-
-        me = await bot.get_me()
-
-        # -------------------------------------------------
-        # Check bot membership
-        # -------------------------------------------------
-
-        member = await bot.get_chat_member(
-            chat_id=chat.id,
-            user_id=me.id
-        )
-
-        logger.info(
-            "Bot membership: status=%s",
-            member.status
-        )
-
-        # -------------------------------------------------
-        # Bot must be administrator
-        #
-        # IMPORTANT:
-        # aiogram 3.24.0 ChatMemberStatus does NOT
-        # contain OWNER.
-        # -------------------------------------------------
-
-        if member.status != ChatMemberStatus.ADMINISTRATOR:
-
-            await message.answer(
-                "❌ <b>البوت ليس مسؤولًا في هذه القناة.</b>\n\n"
-                "أضف البوت كمسؤول في القناة ثم حاول مرة أخرى."
-            )
-
-            return
-
-        # -------------------------------------------------
-        # Check posting permission
-        # -------------------------------------------------
-
-        can_post = getattr(
-            member,
-            "can_post_messages",
-            False
-        )
-
-        logger.info(
-            "Bot can_post_messages=%s",
-            can_post
-        )
-
-        if not can_post:
-
-            await message.answer(
-                "❌ <b>البوت مسؤول، لكن لا يملك صلاحية نشر الرسائل.</b>\n\n"
-                "اذهب إلى:\n"
-                "القناة → إدارة القناة → المسؤولون → Telegram Publisher\n\n"
-                "وفعّل صلاحية:\n"
-                "✅ <b>نشر الرسائل</b>"
-            )
-
-            return
-
-        # -------------------------------------------------
-        # Channel username
-        # -------------------------------------------------
-
-        channel_username = (
-            f"@{chat.username}"
-            if chat.username
-            else username
-        )
-
-        # -------------------------------------------------
-        # Save channel
-        # -------------------------------------------------
-
-        add_channel(
-            telegram_id=message.from_user.id,
-            channel_id=str(chat.id),
-            username=channel_username,
-            title=chat.title or username
-        )
-
-        logger.info(
-            "Channel successfully connected: "
-            "user=%s channel=%s id=%s",
-            message.from_user.id,
-            channel_username,
-            chat.id
-        )
-
-        # -------------------------------------------------
-        # Success
-        # -------------------------------------------------
-
-        await message.answer(
-            "✅ <b>تمت إضافة القناة بنجاح!</b>\n\n"
-            f"📢 <b>{chat.title or 'Channel'}</b>\n"
-            f"🔗 <code>{channel_username}</code>\n\n"
-            "يمكنك الآن استخدامها للنشر من لوحة التحكم.",
-            reply_markup=main_keyboard(language)
-        )
-
-    # -----------------------------------------------------
-    # Telegram Bad Request
-    # -----------------------------------------------------
-
-    except TelegramBadRequest as e:
-
-        error_text = str(e)
-
-        logger.error(
-            "TelegramBadRequest while adding channel %s: %s",
-            username,
-            error_text
-        )
-
-        if "chat not found" in error_text.lower():
-
-            await message.answer(
-                "❌ <b>لم يتم العثور على القناة.</b>\n\n"
-                "تأكد من Username القناة.\n\n"
-                "مثال:\n"
-                "<code>@KhaldounSoft</code>"
-            )
-
-        else:
-
-            await message.answer(
-                "❌ <b>حدث خطأ من Telegram.</b>\n\n"
-                f"<code>{error_text[:500]}</code>"
-            )
-
-    except Exception as e:
-
-        logger.exception(
-            "Channel verification failed"
-        )
-
-        await message.answer(
-            "❌ <b>حدث خطأ أثناء التحقق من القناة.</b>\n\n"
-            "راجع Logs في Render لمعرفة السبب."
-        )
-
-
+    await message.answer(
+        "✅ <b>تمت إضافة القناة بنجاح!</b>\n\n"
+        f"📢 <b>{channel['title']}</b>\n"
+        f"🔗 <code>{channel['username']}</code>\n\n"
+        "يمكنك الآن استخدامها للنشر من لوحة التحكم.",
+        reply_markup=main_keyboard(language)
+    )
+  
 # =========================================================
 # MY CHANNELS
 # =========================================================
@@ -879,6 +901,65 @@ async def api_channels(
         }
     )
 
+
+# =========================================================
+# API: VERIFY & ADD CHANNEL
+# =========================================================
+
+async def api_verify_channel(request):
+
+    user = authenticate_request(request)
+
+    if not user:
+        return web.json_response(
+            {"ok": False, "error": "Unauthorized"},
+            status=401
+        )
+
+    telegram_id = int(user["id"])
+
+    # -----------------------------------------------------
+    # Parse body
+    # -----------------------------------------------------
+
+    try:
+        data = await request.json()
+    except Exception:
+        return web.json_response(
+            {"ok": False, "error": "Invalid JSON"},
+            status=400
+        )
+
+    username = str(data.get("username", "")).strip()
+
+    if not username:
+        return web.json_response(
+            {"ok": False, "error": "اسم القناة مطلوب."},
+            status=400
+        )
+
+    # -----------------------------------------------------
+    # Verify + add
+    # -----------------------------------------------------
+
+    success, message, channel = await verify_and_add_channel(
+        telegram_id,
+        username
+    )
+
+    if not success:
+        return web.json_response(
+            {"ok": False, "error": message},
+            status=400
+        )
+
+    return web.json_response(
+        {
+            "ok": True,
+            "message": message,
+            "channel": channel
+        }
+    )
 
 # =========================================================
 # API: UPLOAD
@@ -1344,6 +1425,148 @@ async def publish_post(
 # API: PUBLISH
 # =========================================================
 
+# =========================================================
+# VERIFY CHANNEL (shared logic)
+# =========================================================
+
+async def verify_and_add_channel(
+    telegram_id,
+    username
+):
+    """
+    يتحقق من القناة ويضيفها.
+    يرجّع tuple: (success: bool, message: str, channel_data: dict|None)
+    """
+
+    username = (username or "").strip()
+
+    # -----------------------------------------------------
+    # Basic validation
+    # -----------------------------------------------------
+
+    if not username:
+        return False, "اسم القناة مطلوب.", None
+
+    if not username.startswith("@"):
+        username = "@" + username
+
+    if " " in username or len(username) < 2:
+        return False, "صيغة اسم المستخدم غير صحيحة.", None
+
+    try:
+
+        logger.info(
+            "Verifying channel %s for user %s",
+            username,
+            telegram_id
+        )
+
+        # -------------------------------------------------
+        # Get channel
+        # -------------------------------------------------
+
+        chat = await bot.get_chat(chat_id=username)
+
+        if chat.type != "channel":
+            return (
+                False,
+                "هذا ليس Channel. أرسل Username قناة وليس مجموعة.",
+                None
+            )
+
+        # -------------------------------------------------
+        # Bot membership check
+        # -------------------------------------------------
+
+        me = await bot.get_me()
+
+        member = await bot.get_chat_member(
+            chat_id=chat.id,
+            user_id=me.id
+        )
+
+        if member.status != ChatMemberStatus.ADMINISTRATOR:
+            return (
+                False,
+                "البوت ليس مسؤولًا في هذه القناة. أضفه كمشرف ثم حاول مجددًا.",
+                None
+            )
+
+        # -------------------------------------------------
+        # Posting permission
+        # -------------------------------------------------
+
+        can_post = getattr(
+            member,
+            "can_post_messages",
+            False
+        )
+
+        if not can_post:
+            return (
+                False,
+                "البوت مسؤول لكنه لا يملك صلاحية نشر الرسائل. فعّل خيار «نشر الرسائل».",
+                None
+            )
+
+        # -------------------------------------------------
+        # Save channel
+        # -------------------------------------------------
+
+        channel_username = (
+            f"@{chat.username}"
+            if chat.username
+            else username
+        )
+
+        add_channel(
+            telegram_id=telegram_id,
+            channel_id=str(chat.id),
+            username=channel_username,
+            title=chat.title or username
+        )
+
+        logger.info(
+            "Channel verified and saved: user=%s channel=%s id=%s",
+            telegram_id,
+            channel_username,
+            chat.id
+        )
+
+        return (
+            True,
+            "تمت إضافة القناة بنجاح.",
+            {
+                "id": str(chat.id),
+                "username": channel_username,
+                "title": chat.title or username
+            }
+        )
+
+    except TelegramBadRequest as e:
+
+        error_text = str(e).lower()
+
+        logger.error(
+            "TelegramBadRequest verifying channel %s: %s",
+            username,
+            e
+        )
+
+        if "chat not found" in error_text:
+            return False, "لم يتم العثور على القناة. تأكد من Username.", None
+
+        if "not enough rights" in error_text:
+            return False, "البوت لا يملك صلاحيات كافية.", None
+
+        return False, f"خطأ من Telegram: {str(e)[:200]}", None
+
+    except Exception:
+
+        logger.exception("Channel verification failed")
+
+        return False, "حدث خطأ غير متوقع أثناء التحقق.", None
+
 async def api_publish(
     request
 ):
@@ -1659,6 +1882,11 @@ async def start_web_server():
     app.router.add_get(
         "/api/channels",
         api_channels
+    )
+
+    app.router.add_post(
+        "/api/verify-channel",
+        api_verify_channel
     )
 
     app.router.add_post(
