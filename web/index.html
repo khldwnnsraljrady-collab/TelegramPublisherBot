@@ -25,7 +25,9 @@
 
     <main class="app">
 
-        <!-- HEADER -->
+        <!-- ============================================= -->
+        <!-- HEADER                                        -->
+        <!-- ============================================= -->
 
         <header class="header">
 
@@ -42,27 +44,36 @@
 
             </div>
 
-            <div class="status">
-                <span class="status-dot"></span>
-                <span data-i18n="online">ONLINE</span>
-            </div>
+            <button
+                class="language-button"
+                id="languageButton"
+                type="button"
+                title="Change language"
+            >
+                🌐
+            </button>
 
         </header>
 
 
-        <!-- WELCOME -->
+        <!-- ============================================= -->
+        <!-- WELCOME                                       -->
+        <!-- ============================================= -->
 
         <section class="welcome">
 
-            <span class="small-label" data-i18n="controlCenter">
+            <span
+                class="small-label"
+                data-i18n="controlCenter"
+            >
                 ✨ CONTROL CENTER
             </span>
 
-            <h2 id="welcomeTitle">
+            <h2 data-i18n="welcomeTitle">
                 أهلاً بك 👋
             </h2>
 
-            <p id="welcomeDescription">
+            <p data-i18n="welcomeDescription">
                 أنشئ منشوراتك وانشرها لقنواتك
                 بطريقة سريعة واحترافية.
             </p>
@@ -70,7 +81,9 @@
         </section>
 
 
-        <!-- CHANNEL SECTION -->
+        <!-- ============================================= -->
+        <!-- CHANNEL SECTION                               -->
+        <!-- ============================================= -->
 
         <section class="section">
 
@@ -88,15 +101,10 @@
                     type="button"
                 >
                     +
-                    <span data-i18n="addChannel">
-                        إضافة قناة
-                    </span>
                 </button>
 
             </div>
 
-
-            <!-- CHANNEL SELECT -->
 
             <div class="channel-card">
 
@@ -106,16 +114,20 @@
 
                 <div class="channel-info">
 
-                    <span data-i18n="selectedChannel">
-                        القناة المحددة
+                    <span
+                        class="small-label"
+                        data-i18n="currentChannel"
+                    >
+                        القناة الحالية
                     </span>
 
                     <select
                         id="channelSelect"
                         class="channel-select"
+                        disabled
                     >
                         <option value="">
-                            تحميل القنوات...
+                            ...
                         </option>
                     </select>
 
@@ -133,26 +145,20 @@
 
             </div>
 
-
-            <!-- CHANNEL LIST -->
-
-            <div
-                class="channels-list"
-                id="channelsList"
-            ></div>
-
         </section>
 
 
-        <!-- CREATE POST -->
+        <!-- ============================================= -->
+        <!-- CREATE POST BUTTON                            -->
+        <!-- ============================================= -->
 
         <button
             class="create-button"
-            id="createPost"
+            id="createPostButton"
             type="button"
         >
 
-            <div class="button-icon">
+            <div class="create-icon">
                 ✨
             </div>
 
@@ -162,9 +168,9 @@
                     إنشاء منشور
                 </strong>
 
-                <span data-i18n="createPostDescription">
+                <small data-i18n="createPostSub">
                     ابدأ منشورًا جديدًا
-                </span>
+                </small>
 
             </div>
 
@@ -175,7 +181,9 @@
         </button>
 
 
-        <!-- QUICK ACTIONS -->
+        <!-- ============================================= -->
+        <!-- QUICK ACTIONS                                 -->
+        <!-- ============================================= -->
 
         <section class="section">
 
@@ -195,7 +203,7 @@
                 <button
                     class="quick-card"
                     type="button"
-                    id="myPostsButton"
+                    id="postsButton"
                 >
 
                     <div class="quick-icon purple">
@@ -206,9 +214,9 @@
                         منشوراتي
                     </strong>
 
-                    <span data-i18n="savedPosts">
+                    <small data-i18n="myPostsSub">
                         المحفوظة
-                    </span>
+                    </small>
 
                 </button>
 
@@ -227,9 +235,9 @@
                         المجدولة
                     </strong>
 
-                    <span data-i18n="waiting">
+                    <small data-i18n="scheduledSub">
                         قيد الانتظار
-                    </span>
+                    </small>
 
                 </button>
 
@@ -248,9 +256,9 @@
                         الإحصائيات
                     </strong>
 
-                    <span data-i18n="channelPerformance">
+                    <small data-i18n="statisticsSub">
                         أداء القناة
-                    </span>
+                    </small>
 
                 </button>
 
@@ -269,9 +277,9 @@
                         الإعدادات
                     </strong>
 
-                    <span data-i18n="customize">
+                    <small data-i18n="settingsSub">
                         تخصيص النظام
-                    </span>
+                    </small>
 
                 </button>
 
@@ -280,76 +288,62 @@
         </section>
 
 
-        <!-- FEATURES -->
+        <!-- ============================================= -->
+        <!-- FEATURES                                      -->
+        <!-- ============================================= -->
 
         <section class="features">
 
-            <div class="feature">
+            <div class="feature-card">
 
-                <div class="feature-icon">
+                <div class="feature-icon purple">
                     🔗
                 </div>
 
-                <div>
+                <strong>Smart Links</strong>
 
-                    <strong>
-                        Smart Links
-                    </strong>
-
-                    <span data-i18n="smartLinksDescription">
-                        اكتشاف الروابط تلقائيًا
-                    </span>
-
-                </div>
+                <p data-i18n="smartLinksDescription">
+                    اكتشاف الروابط تلقائيًا
+                </p>
 
             </div>
 
 
-            <div class="feature">
+            <div class="feature-card">
 
-                <div class="feature-icon">
+                <div class="feature-icon blue">
                     🚀
                 </div>
 
-                <div>
+                <strong>Fast Publishing</strong>
 
-                    <strong>
-                        Fast Publishing
-                    </strong>
-
-                    <span data-i18n="fastPublishingDescription">
-                        نشر سريع وآمن
-                    </span>
-
-                </div>
+                <p data-i18n="fastPublishingDescription">
+                    نشر سريع وآمن
+                </p>
 
             </div>
 
 
-            <div class="feature">
+            <div class="feature-card">
 
-                <div class="feature-icon">
+                <div class="feature-icon green">
                     🛡️
                 </div>
 
-                <div>
+                <strong>Secure</strong>
 
-                    <strong>
-                        Secure
-                    </strong>
-
-                    <span data-i18n="secureDescription">
-                        كل مستخدم يدير قنواته فقط
-                    </span>
-
-                </div>
+                <p data-i18n="secureDescription">
+                    كل مستخدم يدير قنواته فقط
+                </p>
 
             </div>
 
         </section>
 
 
-        <!-- FOOTER -->
+        <!-- ============================================= -->
+        <!-- FOOTER                                        -->
+        <!-- ============================================= -->
 
         <footer>
 
@@ -368,7 +362,9 @@
     </main>
 
 
-    <!-- CREATE POST MODAL -->
+    <!-- ============================================= -->
+    <!-- CREATE POST MODAL                             -->
+    <!-- ============================================= -->
 
     <div
         class="modal"
@@ -382,8 +378,6 @@
 
 
         <div class="modal-box">
-
-            <!-- MODAL HEADER -->
 
             <div class="modal-header">
 
@@ -415,16 +409,19 @@
 
             <!-- CHANNEL -->
 
-            <label data-i18n="publishTo">
+            <label
+                class="field-label"
+                data-i18n="publishTo"
+            >
                 نشر إلى
             </label>
 
             <select
                 id="postChannel"
-                class="post-channel-select"
+                class="input"
             >
                 <option value="">
-                    اختر القناة
+                    ...
                 </option>
             </select>
 
@@ -434,6 +431,7 @@
             <label
                 class="upload-label"
                 for="mediaInput"
+                id="uploadButton"
             >
 
                 <div class="upload-icon">
@@ -467,55 +465,30 @@
             >
 
 
-            <!-- SELECTED FILE -->
+            <!-- FILE INFO -->
 
             <div
-                class="selected-file"
-                id="selectedFile"
-                hidden
-            >
-
-                <div class="file-preview">
-                    📎
-                </div>
-
-                <div class="file-info">
-
-                    <strong id="fileName">
-                        file
-                    </strong>
-
-                    <span id="fileSize">
-                        0 MB
-                    </span>
-
-                </div>
-
-                <button
-                    type="button"
-                    id="removeFile"
-                    class="remove-file"
-                >
-                    ×
-                </button>
-
-            </div>
+                class="file-info hidden"
+                id="fileInfo"
+            ></div>
 
 
             <!-- TEXT -->
 
-            <label data-i18n="postText">
+            <label
+                class="field-label"
+                data-i18n="postText"
+            >
                 نص المنشور
             </label>
 
             <textarea
                 id="postText"
+                class="textarea"
                 placeholder="اكتب محتوى المنشور هنا..."
                 maxlength="4096"
             ></textarea>
 
-
-            <!-- CHARACTER COUNT -->
 
             <div
                 class="character-count"
@@ -525,7 +498,7 @@
             </div>
 
 
-            <!-- SMART LINK -->
+            <!-- SMART LINKS -->
 
             <div class="smart-box">
 
@@ -540,8 +513,7 @@
                     </strong>
 
                     <p data-i18n="smartLinksHelp">
-                        سيتم اكتشاف الروابط تلقائيًا وتحويلها
-                        إلى أزرار.
+                        سيتم اكتشاف الروابط تلقائيًا وتحويلها إلى أزرار.
                     </p>
 
                 </div>
@@ -550,7 +522,7 @@
 
                     <input
                         type="checkbox"
-                        id="smartLinksToggle"
+                        id="smartLinks"
                         checked
                     >
 
@@ -573,14 +545,15 @@
 
                     <button
                         id="addButton"
+                        class="mini-button"
                         type="button"
                     >
-                        + <span data-i18n="add">إضافة</span>
+                        +
                     </button>
 
                 </div>
 
-                <div id="buttonList"></div>
+                <div id="buttonsContainer"></div>
 
             </div>
 
@@ -620,12 +593,9 @@
                     </div>
 
 
-                    <!-- MEDIA PREVIEW -->
-
                     <div
                         id="previewMedia"
-                        class="preview-media"
-                        hidden
+                        class="preview-media hidden"
                     ></div>
 
 
@@ -639,12 +609,11 @@
             </div>
 
 
-            <!-- PROGRESS -->
+            <!-- UPLOAD PROGRESS -->
 
             <div
-                class="upload-progress"
+                class="upload-progress hidden"
                 id="uploadProgress"
-                hidden
             >
 
                 <div class="progress-info">
@@ -671,28 +640,36 @@
             </div>
 
 
-            <!-- PUBLISH -->
+            <!-- ACTIONS -->
 
-            <button
-                class="publish-button"
-                id="publishButton"
-                type="button"
-            >
+            <div class="modal-actions">
 
-                🚀
+                <button
+                    class="cancel-button"
+                    id="cancelButton"
+                    type="button"
+                >
+                    <span data-i18n="cancel">إلغاء</span>
+                </button>
 
-                <span data-i18n="publish">
-                    نشر المنشور
-                </span>
+                <button
+                    class="publish-button"
+                    id="publishButton"
+                    type="button"
+                >
+                    🚀 <span data-i18n="publish">نشر المنشور</span>
+                </button>
 
-            </button>
+            </div>
 
         </div>
 
     </div>
 
 
-    <!-- ADD CHANNEL MODAL -->
+    <!-- ============================================= -->
+    <!-- ADD CHANNEL MODAL                             -->
+    <!-- ============================================= -->
 
     <div
         class="modal"
@@ -764,8 +741,7 @@
                     <span>3</span>
 
                     <p data-i18n="channelStep3">
-                        أدخل اسم مستخدم القناة مثل:
-                        @KhaldounSoft
+                        أدخل اسم مستخدم القناة مثل: @KhaldounSoft
                     </p>
 
                 </div>
@@ -773,14 +749,17 @@
             </div>
 
 
-            <label data-i18n="channelUsername">
+            <label
+                class="field-label"
+                data-i18n="channelUsername"
+            >
                 اسم مستخدم القناة
             </label>
 
             <input
                 type="text"
                 id="channelUsername"
-                class="channel-input"
+                class="input"
                 placeholder="@KhaldounSoft"
                 autocomplete="off"
             >
@@ -811,7 +790,60 @@
     </div>
 
 
-    <!-- TOAST -->
+    <!-- ============================================= -->
+    <!-- POSTS MODAL                                   -->
+    <!-- ============================================= -->
+
+    <div
+        class="modal"
+        id="postsModal"
+    >
+
+        <div
+            class="modal-overlay"
+            id="postsModalOverlay"
+        ></div>
+
+
+        <div class="modal-box">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span
+                        class="small-label"
+                        data-i18n="posts"
+                    >
+                        POSTS
+                    </span>
+
+                    <h2 data-i18n="myPosts">
+                        📋 منشوراتي
+                    </h2>
+
+                </div>
+
+                <button
+                    class="close-button"
+                    id="closePostsModal"
+                    type="button"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <div id="postsList"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================= -->
+    <!-- TOAST                                         -->
+    <!-- ============================================= -->
 
     <div
         class="toast"
