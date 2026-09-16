@@ -1,868 +1,1327 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+/* =====================================================
+   TELEGRAM WEB APP INIT
+===================================================== */
+
+const tg = window.Telegram?.WebApp;
+
+if (tg) {
+    tg.ready();
+    tg.expand();
+}
+
+const initData = tg?.initData || "";
+
+
+/* =====================================================
+   STATE
+===================================================== */
+
+let currentLanguage = "ar";
+let channels = [];
+let selectedFile = null;
+let uploadedMedia = null;
+let toastTimer = null;
+
+
+/* =====================================================
+   TRANSLATIONS
+===================================================== */
+
+const translations = {
+
+    ar: {
+
+        /* Header / Welcome */
+        controlCenter: "✨ مركز التحكم",
+        welcomeTitle: "أهلاً بك 👋",
+        welcomeDescription:
+            "أنشئ منشوراتك وانشرها لقنواتك بطريقة سريعة واحترافية.",
+
+        /* Channels */
+        yourChannels: "قنواتك",
+        currentChannel: "القناة الحالية",
+        connected: "متصل",
+        noChannels: "لا توجد قنوات. أضف قناة أولًا.",
+
+        /* Create Post */
+        createPost: "إنشاء منشور",
+        createPostSub: "ابدأ منشورًا جديدًا",
+
+        /* Quick actions */
+        quickActions: "إجراءات سريعة",
+        myPosts: "منشوراتي",
+        myPostsSub: "المحفوظة",
+        scheduled: "المجدولة",
+        scheduledSub: "قيد الانتظار",
+        statistics: "الإحصائيات",
+        statisticsSub: "أداء القناة",
+        settings: "الإعدادات",
+        settingsSub: "تخصيص النظام",
+
+        /* Features */
+        smartLinksDescription: "اكتشاف الروابط تلقائيًا",
+        fastPublishingDescription: "نشر سريع وآمن",
+        secureDescription: "كل مستخدم يدير قنواته فقط",
+        crafted: "صُنع من أجل تليجرام",
+
+        /* Modal — Create Post */
+        create: "إنشاء",
+        newPost: "✨ منشور جديد",
+        publishTo: "نشر إلى",
+        addMedia: "إضافة صورة أو ملف",
+        mediaDescription: "صورة، فيديو، ملف، صوت أو GIF",
+        postText: "نص المنشور",
+        postTextPlaceholder: "اكتب محتوى المنشور هنا...",
+        smartLinksHelp:
+            "سيتم اكتشاف الروابط تلقائيًا وتحويلها إلى أزرار.",
+        buttons: "🔘 الأزرار",
+        addButtonText: "نص الزر",
+        addButtonUrl: "الرابط",
+        preview: "👀 المعاينة",
+        previewPlaceholder: "اكتب النص لمشاهدة المعاينة...",
+        cancel: "إلغاء",
+        publish: "نشر المنشور",
+
+        /* Modal — Add Channel */
+        channel: "قناة",
+        addNewChannel: "📢 إضافة قناة",
+        channelStep1: "أضف البوت إلى قناتك كمسؤول.",
+        channelStep2: "امنحه صلاحية نشر الرسائل.",
+        channelStep3:
+            "أدخل اسم مستخدم القناة مثل: @KhaldounSoft",
+        channelUsername: "اسم مستخدم القناة",
+        verifyChannel: "التحقق من القناة",
+
+        /* Posts modal */
+        posts: "المنشورات",
+        noPosts: "لا توجد منشورات بعد.",
+
+        /* Messages */
+        uploading: "جاري رفع الملف...",
+        publishing: "جاري النشر...",
+        published: "تم نشر المنشور بنجاح 🚀",
+        uploadFailed: "فشل رفع الملف",
+        publishFailed: "فشل النشر",
+        chooseChannel: "اختر قناة أولًا",
+        emptyPost: "المنشور فارغ",
+        unauthorized: "غير مصرح",
+        loadChannelsFailed: "فشل تحميل القنوات",
+        verifyChannelSuccess: "✅ تمت إضافة القناة بنجاح",
+        openLink: "🔗 فتح الرابط",
+
+        /* Add channel instructions */
+        channelAddedBot:
+            "أضف البوت كمسؤول في القناة، ثم أدخل @username هنا."
+    },
+
+    en: {
+
+        /* Header / Welcome */
+        controlCenter: "✨ CONTROL CENTER",
+        welcomeTitle: "Welcome 👋",
+        welcomeDescription:
+            "Create and publish your posts to your channels quickly and professionally.",
+
+        /* Channels */
+        yourChannels: "Your Channels",
+        currentChannel: "Current Channel",
+        connected: "Connected",
+        noChannels: "No channels. Add one first.",
+
+        /* Create Post */
+        createPost: "Create Post",
+        createPostSub: "Start a new post",
+
+        /* Quick actions */
+        quickActions: "Quick Actions",
+        myPosts: "My Posts",
+        myPostsSub: "Saved",
+        scheduled: "Scheduled",
+        scheduledSub: "Waiting",
+        statistics: "Statistics",
+        statisticsSub: "Channel performance",
+        settings: "Settings",
+        settingsSub: "Customize",
+
+        /* Features */
+        smartLinksDescription: "Auto-detect links",
+        fastPublishingDescription: "Fast & secure publishing",
+        secureDescription: "Each user sees only their channels",
+        crafted: "Crafted for Telegram",
+
+        /* Modal — Create Post */
+        create: "CREATE",
+        newPost: "✨ New Post",
+        publishTo: "Publish to",
+        addMedia: "Add photo or file",
+        mediaDescription: "Photo, video, file, audio or GIF",
+        postText: "Post text",
+        postTextPlaceholder: "Write your post here...",
+        smartLinksHelp:
+            "Links will be auto-detected and turned into buttons.",
+        buttons: "🔘 Buttons",
+        addButtonText: "Button text",
+        addButtonUrl: "URL",
+        preview: "👀 Preview",
+        previewPlaceholder: "Write something to preview...",
+        cancel: "Cancel",
+        publish: "Publish post",
+
+        /* Modal — Add Channel */
+        channel: "CHANNEL",
+        addNewChannel: "📢 Add Channel",
+        channelStep1: "Add the bot to your channel as admin.",
+        channelStep2: "Give it permission to post messages.",
+        channelStep3: "Enter the channel username like: @KhaldounSoft",
+        channelUsername: "Channel username",
+        verifyChannel: "Verify channel",
+
+        /* Posts modal */
+        posts: "POSTS",
+        noPosts: "No posts yet.",
+
+        /* Messages */
+        uploading: "Uploading file...",
+        publishing: "Publishing...",
+        published: "Post published successfully 🚀",
+        uploadFailed: "File upload failed",
+        publishFailed: "Publishing failed",
+        chooseChannel: "Choose a channel first",
+        emptyPost: "Post is empty",
+        unauthorized: "Unauthorized",
+        loadChannelsFailed: "Failed to load channels",
+        verifyChannelSuccess: "✅ Channel added successfully",
+        openLink: "🔗 Open link",
+
+        /* Add channel instructions */
+        channelAddedBot:
+            "Add the bot as admin in the channel, then enter @username here."
+    }
+};
+
+
+/* =====================================================
+   TRANSLATE HELPER
+===================================================== */
+
+function tr(key) {
+
+    return (
+        translations[currentLanguage]?.[key]
+        ||
+        translations.ar[key]
+        ||
+        key
+    );
+}
+
+
+/* =====================================================
+   DOM REFS
+===================================================== */
+
+const postModal =
+    document.getElementById("postModal");
+
+const postsModal =
+    document.getElementById("postsModal");
+
+const channelModal =
+    document.getElementById("channelModal");
+
+const channelSelect =
+    document.getElementById("channelSelect");
+
+const postChannel =
+    document.getElementById("postChannel");
+
+const postText =
+    document.getElementById("postText");
+
+const mediaInput =
+    document.getElementById("mediaInput");
+
+const fileInfo =
+    document.getElementById("fileInfo");
+
+const characterCount =
+    document.getElementById("characterCount");
+
+const previewText =
+    document.getElementById("previewText");
+
+const previewMedia =
+    document.getElementById("previewMedia");
+
+const previewButtons =
+    document.getElementById("previewButtons");
+
+const buttonsContainer =
+    document.getElementById("buttonsContainer");
+
+const smartLinksCheckbox =
+    document.getElementById("smartLinks");
+
+const toast =
+    document.getElementById("toast");
+
+const toastMessage =
+    document.getElementById("toastMessage");
+
+const toastIcon =
+    document.getElementById("toastIcon");
 
-<head>
-    <meta charset="UTF-8">
+const channelMessage =
+    document.getElementById("channelMessage");
+
+const channelUsername =
+    document.getElementById("channelUsername");
+
+const postsList =
+    document.getElementById("postsList");
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    >
 
-    <meta name="theme-color" content="#080b18">
+/* =====================================================
+   APPLY LANGUAGE
+===================================================== */
 
-    <title>Telegram Publisher</title>
+function applyLanguage() {
 
-    <link rel="stylesheet" href="style.css">
+    document.documentElement.lang =
+        currentLanguage;
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
+    document.documentElement.dir =
+        currentLanguage === "ar"
+            ? "rtl"
+            : "ltr";
 
-<body>
+    document
+        .querySelectorAll("[data-i18n]")
+        .forEach(element => {
 
-    <div class="background-glow glow-one"></div>
-    <div class="background-glow glow-two"></div>
+            const key =
+                element.dataset.i18n;
 
-    <main class="app">
+            const value =
+                tr(key);
 
-        <!-- ============================================= -->
-        <!-- HEADER                                        -->
-        <!-- ============================================= -->
+            if (value) {
+                element.textContent = value;
+            }
 
-        <header class="header">
+        });
 
-            <div class="brand">
+    if (postText) {
+        postText.placeholder =
+            tr("postTextPlaceholder");
+    }
 
-                <div class="brand-icon">
-                    ⚡
-                </div>
+    if (previewText) {
+        updatePreview();
+    }
 
-                <div>
-                    <h1>Telegram</h1>
-                    <span>Publisher</span>
-                </div>
+    if (channelUsername) {
+        channelUsername.placeholder =
+            "@KhaldounSoft";
+    }
 
-            </div>
+}
 
-            <button
-                class="language-button"
-                id="languageButton"
-                type="button"
-                title="Change language"
-            >
-                🌐
-            </button>
 
-        </header>
+/* =====================================================
+   HAPTIC
+===================================================== */
 
+function haptic(type = "selection") {
 
-        <!-- ============================================= -->
-        <!-- WELCOME                                       -->
-        <!-- ============================================= -->
+    try {
 
-        <section class="welcome">
+        if (!tg?.HapticFeedback) return;
 
-            <span
-                class="small-label"
-                data-i18n="controlCenter"
-            >
-                ✨ CONTROL CENTER
-            </span>
+        if (type === "success") {
+            tg.HapticFeedback.notificationOccurred("success");
+        } else if (type === "warning") {
+            tg.HapticFeedback.notificationOccurred("warning");
+        } else if (type === "error") {
+            tg.HapticFeedback.notificationOccurred("error");
+        } else {
+            tg.HapticFeedback.selectionChanged();
+        }
 
-            <h2 data-i18n="welcomeTitle">
-                أهلاً بك 👋
-            </h2>
+    } catch (e) {
+        /* silent */
+    }
 
-            <p data-i18n="welcomeDescription">
-                أنشئ منشوراتك وانشرها لقنواتك
-                بطريقة سريعة واحترافية.
-            </p>
+}
 
-        </section>
 
+/* =====================================================
+   TOAST
+===================================================== */
 
-        <!-- ============================================= -->
-        <!-- CHANNEL SECTION                               -->
-        <!-- ============================================= -->
+function showToast(message, icon = "✓") {
 
-        <section class="section">
+    if (!toast) return;
 
-            <div class="section-title">
+    toastMessage.textContent = message;
+    toastIcon.textContent = icon;
 
-                <span>📢</span>
+    toast.classList.add("show");
 
-                <span data-i18n="yourChannels">
-                    قنواتك
-                </span>
+    clearTimeout(toastTimer);
 
-                <button
-                    class="add-channel-button"
-                    id="addChannelButton"
-                    type="button"
-                >
-                    +
-                </button>
+    toastTimer = setTimeout(
+        () => toast.classList.remove("show"),
+        2500
+    );
 
-            </div>
+}
 
 
-            <div class="channel-card">
+/* =====================================================
+   FORMAT BYTES
+===================================================== */
 
-                <div class="channel-icon">
-                    📢
-                </div>
+function formatBytes(bytes) {
 
-                <div class="channel-info">
+    if (!bytes) return "0 B";
 
-                    <span
-                        class="small-label"
-                        data-i18n="currentChannel"
-                    >
-                        القناة الحالية
-                    </span>
+    const units = ["B", "KB", "MB", "GB"];
 
-                    <select
-                        id="channelSelect"
-                        class="channel-select"
-                        disabled
-                    >
-                        <option value="">
-                            ...
-                        </option>
-                    </select>
+    const index = Math.min(
+        Math.floor(Math.log(bytes) / Math.log(1024)),
+        units.length - 1
+    );
 
-                </div>
+    return (
+        (bytes / Math.pow(1024, index)).toFixed(1)
+        + " "
+        + units[index]
+    );
 
-                <div class="online-badge">
+}
 
-                    <span></span>
 
-                    <span data-i18n="connected">
-                        متصل
-                    </span>
+/* =====================================================
+   API HELPER
+===================================================== */
 
-                </div>
+async function apiFetch(url, options = {}) {
 
-            </div>
+    const headers = {
+        "X-Telegram-Init-Data": initData,
+        ...(options.headers || {})
+    };
 
-        </section>
+    return fetch(url, {
+        ...options,
+        headers
+    });
 
+}
 
-        <!-- ============================================= -->
-        <!-- CREATE POST BUTTON                            -->
-        <!-- ============================================= -->
 
-        <button
-            class="create-button"
-            id="createPostButton"
-            type="button"
-        >
+/* =====================================================
+   LOAD CHANNELS
+===================================================== */
 
-            <div class="create-icon">
-                ✨
-            </div>
+async function loadChannels() {
 
-            <div class="button-text">
+    try {
 
-                <strong data-i18n="createPost">
-                    إنشاء منشور
-                </strong>
+        const response = await apiFetch("/api/channels");
 
-                <small data-i18n="createPostSub">
-                    ابدأ منشورًا جديدًا
-                </small>
+        const data = await response.json();
 
-            </div>
+        if (!data.ok) {
 
-            <div class="arrow">
-                ←
-            </div>
+            showToast(
+                data.error || tr("unauthorized"),
+                "⚠"
+            );
 
-        </button>
+            return;
+        }
 
+        channels = data.channels || [];
 
-        <!-- ============================================= -->
-        <!-- QUICK ACTIONS                                 -->
-        <!-- ============================================= -->
+        renderChannels();
 
-        <section class="section">
+    } catch (error) {
 
-            <div class="section-title">
+        console.error(error);
 
-                <span>⚡</span>
+        showToast(tr("loadChannelsFailed"), "⚠");
 
-                <span data-i18n="quickActions">
-                    إجراءات سريعة
-                </span>
+    }
 
-            </div>
+}
 
 
-            <div class="quick-grid">
+/* =====================================================
+   RENDER CHANNELS
+===================================================== */
 
-                <button
-                    class="quick-card"
-                    type="button"
-                    id="postsButton"
-                >
+function renderChannels() {
 
-                    <div class="quick-icon purple">
-                        📋
-                    </div>
+    if (channelSelect) {
+        channelSelect.innerHTML = "";
+    }
 
-                    <strong data-i18n="myPosts">
-                        منشوراتي
-                    </strong>
+    if (postChannel) {
+        postChannel.innerHTML = "";
+    }
 
-                    <small data-i18n="myPostsSub">
-                        المحفوظة
-                    </small>
+    if (!channels.length) {
 
-                </button>
+        const option =
+            document.createElement("option");
 
+        option.value = "";
+        option.textContent = tr("noChannels");
 
-                <button
-                    class="quick-card"
-                    type="button"
-                    id="scheduledButton"
-                >
+        channelSelect?.appendChild(
+            option
+        );
 
-                    <div class="quick-icon blue">
-                        ⏰
-                    </div>
+        postChannel?.appendChild(
+            option.cloneNode(true)
+        );
 
-                    <strong data-i18n="scheduled">
-                        المجدولة
-                    </strong>
+        return;
+    }
 
-                    <small data-i18n="scheduledSub">
-                        قيد الانتظار
-                    </small>
 
-                </button>
+    channels.forEach(channel => {
 
+        const label =
+            channel.username
+            || channel.title
+            || channel.id;
 
-                <button
-                    class="quick-card"
-                    type="button"
-                    id="statisticsButton"
-                >
+        /* Channel select (top of page) */
 
-                    <div class="quick-icon cyan">
-                        📊
-                    </div>
+        const opt1 =
+            document.createElement("option");
 
-                    <strong data-i18n="statistics">
-                        الإحصائيات
-                    </strong>
+        opt1.value = channel.id;
+        opt1.textContent = label;
 
-                    <small data-i18n="statisticsSub">
-                        أداء القناة
-                    </small>
+        channelSelect?.appendChild(opt1);
 
-                </button>
+        /* Post channel (modal) */
 
+        const opt2 =
+            document.createElement("option");
 
-                <button
-                    class="quick-card"
-                    type="button"
-                    id="settingsButton"
-                >
+        opt2.value = channel.id;
+        opt2.textContent = label;
 
-                    <div class="quick-icon orange">
-                        ⚙️
-                    </div>
+        postChannel?.appendChild(opt2);
 
-                    <strong data-i18n="settings">
-                        الإعدادات
-                    </strong>
+    });
 
-                    <small data-i18n="settingsSub">
-                        تخصيص النظام
-                    </small>
+}
 
-                </button>
 
-            </div>
+/* =====================================================
+   OPEN POST MODAL
+===================================================== */
 
-        </section>
+document
+    .getElementById("createPostButton")
+    ?.addEventListener("click", () => {
 
+        if (!channels.length) {
 
-        <!-- ============================================= -->
-        <!-- FEATURES                                      -->
-        <!-- ============================================= -->
+            showToast(tr("noChannels"), "⚠");
 
-        <section class="features">
+            haptic("warning");
 
-            <div class="feature-card">
+            return;
 
-                <div class="feature-icon purple">
-                    🔗
-                </div>
+        }
 
-                <strong>Smart Links</strong>
+        postModal.classList.add("show");
 
-                <p data-i18n="smartLinksDescription">
-                    اكتشاف الروابط تلقائيًا
-                </p>
+        updatePreview();
 
-            </div>
+        haptic();
 
+    });
 
-            <div class="feature-card">
 
-                <div class="feature-icon blue">
-                    🚀
-                </div>
+/* =====================================================
+   CLOSE POST MODAL
+===================================================== */
 
-                <strong>Fast Publishing</strong>
+function closePostModal() {
 
-                <p data-i18n="fastPublishingDescription">
-                    نشر سريع وآمن
-                </p>
+    postModal?.classList.remove("show");
 
-            </div>
+}
 
+document
+    .getElementById("closeModal")
+    ?.addEventListener("click", closePostModal);
 
-            <div class="feature-card">
+document
+    .getElementById("cancelButton")
+    ?.addEventListener("click", closePostModal);
 
-                <div class="feature-icon green">
-                    🛡️
-                </div>
+document
+    .getElementById("modalOverlay")
+    ?.addEventListener("click", closePostModal);
 
-                <strong>Secure</strong>
 
-                <p data-i18n="secureDescription">
-                    كل مستخدم يدير قنواته فقط
-                </p>
+/* =====================================================
+   LANGUAGE TOGGLE
+===================================================== */
 
-            </div>
+document
+    .getElementById("languageButton")
+    ?.addEventListener("click", () => {
 
-        </section>
+        currentLanguage =
+            currentLanguage === "ar"
+                ? "en"
+                : "ar";
 
+        applyLanguage();
 
-        <!-- ============================================= -->
-        <!-- FOOTER                                        -->
-        <!-- ============================================= -->
+        renderChannels();
 
-        <footer>
+        haptic();
 
-            <div class="footer-line"></div>
+    });
 
-            <span>
-                💎 Telegram Publisher
-            </span>
 
-            <small data-i18n="crafted">
-                Crafted for Telegram
-            </small>
+/* =====================================================
+   ADD CHANNEL MODAL
+===================================================== */
 
-        </footer>
+function openChannelModal() {
 
-    </main>
+    if (channelMessage) {
+        channelMessage.textContent = "";
+        channelMessage.className = "channel-message";
+    }
 
+    if (channelUsername) {
+        channelUsername.value = "";
+    }
 
-    <!-- ============================================= -->
-    <!-- CREATE POST MODAL                             -->
-    <!-- ============================================= -->
+    channelModal?.classList.add("show");
 
-    <div
-        class="modal"
-        id="postModal"
-    >
+    haptic();
 
-        <div
-            class="modal-overlay"
-            id="modalOverlay"
-        ></div>
+}
 
+function closeChannelModal() {
 
-        <div class="modal-box">
+    channelModal?.classList.remove("show");
 
-            <div class="modal-header">
+}
 
-                <div>
+document
+    .getElementById("addChannelButton")
+    ?.addEventListener("click", openChannelModal);
 
-                    <span
-                        class="small-label"
-                        data-i18n="create"
-                    >
-                        CREATE
-                    </span>
+document
+    .getElementById("closeChannelModal")
+    ?.addEventListener("click", closeChannelModal);
 
-                    <h2 data-i18n="newPost">
-                        ✨ منشور جديد
-                    </h2>
+document
+    .getElementById("channelModalOverlay")
+    ?.addEventListener("click", closeChannelModal);
 
-                </div>
 
-                <button
-                    class="close-button"
-                    id="closeModal"
-                    type="button"
-                >
-                    ×
-                </button>
+/* =====================================================
+   VERIFY CHANNEL
+===================================================== */
 
-            </div>
+document
+    .getElementById("verifyChannelButton")
+    ?.addEventListener("click", verifyChannel);
 
+async function verifyChannel() {
 
-            <!-- CHANNEL -->
+    const username =
+        channelUsername?.value.trim();
 
-            <label
-                class="field-label"
-                data-i18n="publishTo"
-            >
-                نشر إلى
-            </label>
+    if (!username) {
 
-            <select
-                id="postChannel"
-                class="input"
-            >
-                <option value="">
-                    ...
-                </option>
-            </select>
+        channelMessage.textContent =
+            "⚠ أدخل اسم المستخدم أولًا";
 
+        channelMessage.className =
+            "channel-message error";
 
-            <!-- MEDIA UPLOAD -->
+        haptic("warning");
 
-            <label
-                class="upload-label"
-                for="mediaInput"
-                id="uploadButton"
-            >
+        return;
+    }
 
-                <div class="upload-icon">
-                    📎
-                </div>
+    const button =
+        document.getElementById("verifyChannelButton");
 
-                <div class="upload-text">
+    button.disabled = true;
 
-                    <strong data-i18n="addMedia">
-                        إضافة صورة أو ملف
-                    </strong>
+    const originalHTML = button.innerHTML;
 
-                    <span data-i18n="mediaDescription">
-                        صورة، فيديو، ملف، صوت أو GIF
-                    </span>
+    button.innerHTML = "⏳ ...";
 
-                </div>
+    try {
 
-                <div class="upload-arrow">
-                    ＋
-                </div>
+        const response = await apiFetch(
+            "/api/verify-channel",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username })
+            }
+        );
 
-            </label>
+        const data = await response.json();
 
+        if (!data.ok) {
 
-            <input
-                type="file"
-                id="mediaInput"
-                hidden
-                accept="image/*,video/*,audio/*,.gif,.pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.txt,.apk"
-            >
+            channelMessage.textContent =
+                data.error || "خطأ";
 
+            channelMessage.className =
+                "channel-message error";
 
-            <!-- FILE INFO -->
+            haptic("error");
 
-            <div
-                class="file-info hidden"
-                id="fileInfo"
-            ></div>
+            return;
+        }
 
+        channelMessage.textContent =
+            tr("verifyChannelSuccess");
 
-            <!-- TEXT -->
+        channelMessage.className =
+            "channel-message success";
 
-            <label
-                class="field-label"
-                data-i18n="postText"
-            >
-                نص المنشور
-            </label>
+        haptic("success");
 
-            <textarea
-                id="postText"
-                class="textarea"
-                placeholder="اكتب محتوى المنشور هنا..."
-                maxlength="4096"
-            ></textarea>
+        /* Reload channels */
 
+        await loadChannels();
 
-            <div
-                class="character-count"
-                id="characterCount"
-            >
-                0 / 4096
-            </div>
+        setTimeout(closeChannelModal, 1200);
 
+    } catch (error) {
 
-            <!-- SMART LINKS -->
+        console.error(error);
 
-            <div class="smart-box">
+        channelMessage.textContent =
+            "فشل الاتصال بالسيرفر";
 
-                <div class="smart-icon">
-                    🔗
-                </div>
+        channelMessage.className =
+            "channel-message error";
 
-                <div>
+        haptic("error");
 
-                    <strong>
-                        Smart Links
-                    </strong>
+    } finally {
 
-                    <p data-i18n="smartLinksHelp">
-                        سيتم اكتشاف الروابط تلقائيًا وتحويلها إلى أزرار.
-                    </p>
+        button.disabled = false;
+        button.innerHTML = originalHTML;
 
-                </div>
+    }
 
-                <label class="switch">
+}
 
-                    <input
-                        type="checkbox"
-                        id="smartLinks"
-                        checked
-                    >
 
-                    <span></span>
+/* =====================================================
+   TEXT PREVIEW
+===================================================== */
 
-                </label>
+postText?.addEventListener("input", () => {
 
-            </div>
+    updateCharacterCount();
 
+    updatePreview();
 
-            <!-- CUSTOM BUTTONS -->
+});
 
-            <div class="custom-buttons">
 
-                <div class="custom-title">
+function updateCharacterCount() {
 
-                    <span data-i18n="buttons">
-                        🔘 الأزرار
-                    </span>
+    if (!characterCount || !postText) return;
 
-                    <button
-                        id="addButton"
-                        class="mini-button"
-                        type="button"
-                    >
-                        +
-                    </button>
+    characterCount.textContent =
+        `${postText.value.length} / 4096`;
 
-                </div>
+}
 
-                <div id="buttonsContainer"></div>
 
-            </div>
+/* =====================================================
+   FILE PICKER
+===================================================== */
 
+document
+    .getElementById("uploadButton")
+    ?.addEventListener("click", e => {
 
-            <!-- PREVIEW TITLE -->
+        /* Let the label trigger the input */
 
-            <div
-                class="preview-title"
-                data-i18n="preview"
-            >
-                👀 المعاينة
-            </div>
+        if (e.target.id !== "mediaInput") {
+            mediaInput?.click();
+        }
 
+    });
 
-            <!-- TELEGRAM PREVIEW -->
 
-            <div
-                class="telegram-preview"
-                id="preview"
-            >
+mediaInput?.addEventListener("change", async () => {
 
-                <div class="preview-avatar">
-                    ⚡
-                </div>
+    selectedFile = mediaInput.files?.[0];
 
-                <div class="preview-content">
+    if (!selectedFile) return;
 
-                    <strong>
-                        Telegram Publisher
-                    </strong>
+    fileInfo.classList.remove("hidden");
 
-                    <div
-                        id="previewText"
-                        class="preview-text"
-                    >
-                        اكتب النص لمشاهدة المعاينة...
-                    </div>
+    fileInfo.textContent =
+        `${selectedFile.name} — ${formatBytes(selectedFile.size)}`;
 
+    previewFile(selectedFile);
 
-                    <div
-                        id="previewMedia"
-                        class="preview-media hidden"
-                    ></div>
+    await uploadFile();
 
+});
 
-                    <div
-                        id="previewButtons"
-                        class="preview-buttons"
-                    ></div>
 
-                </div>
+/* =====================================================
+   PREVIEW FILE
+===================================================== */
 
-            </div>
+function previewFile(file) {
 
+    if (!previewMedia) return;
 
-            <!-- UPLOAD PROGRESS -->
+    previewMedia.innerHTML = "";
+    previewMedia.classList.remove("hidden");
 
-            <div
-                class="upload-progress hidden"
-                id="uploadProgress"
-            >
+    if (file.type.startsWith("image/")) {
 
-                <div class="progress-info">
+        const img = document.createElement("img");
 
-                    <span id="progressText">
-                        جاري الرفع...
-                    </span>
+        img.src = URL.createObjectURL(file);
 
-                    <span id="progressPercent">
-                        0%
-                    </span>
+        previewMedia.appendChild(img);
 
-                </div>
+    } else if (file.type.startsWith("video/")) {
 
-                <div class="progress-bar">
+        const video = document.createElement("video");
 
-                    <div
-                        id="progressBar"
-                        class="progress-value"
-                    ></div>
+        video.src = URL.createObjectURL(file);
+        video.controls = true;
 
-                </div>
+        previewMedia.appendChild(video);
 
-            </div>
+    } else if (file.type.startsWith("audio/")) {
 
+        const audio = document.createElement("audio");
 
-            <!-- ACTIONS -->
+        audio.src = URL.createObjectURL(file);
+        audio.controls = true;
 
-            <div class="modal-actions">
+        previewMedia.appendChild(audio);
 
-                <button
-                    class="cancel-button"
-                    id="cancelButton"
-                    type="button"
-                >
-                    <span data-i18n="cancel">إلغاء</span>
-                </button>
+    } else {
 
-                <button
-                    class="publish-button"
-                    id="publishButton"
-                    type="button"
-                >
-                    🚀 <span data-i18n="publish">نشر المنشور</span>
-                </button>
+        previewMedia.textContent =
+            `📎 ${file.name}`;
 
-            </div>
+    }
 
-        </div>
+}
 
-    </div>
 
+/* =====================================================
+   UPLOAD FILE
+===================================================== */
 
-    <!-- ============================================= -->
-    <!-- ADD CHANNEL MODAL                             -->
-    <!-- ============================================= -->
+async function uploadFile() {
 
-    <div
-        class="modal"
-        id="channelModal"
-    >
+    showToast(tr("uploading"), "⏳");
 
-        <div
-            class="modal-overlay"
-            id="channelModalOverlay"
-        ></div>
+    const formData = new FormData();
 
+    formData.append("file", selectedFile);
 
-        <div class="modal-box channel-modal-box">
+    try {
 
-            <div class="modal-header">
+        const response = await apiFetch(
+            "/api/upload",
+            {
+                method: "POST",
+                body: formData
+            }
+        );
 
-                <div>
+        const data = await response.json();
 
-                    <span
-                        class="small-label"
-                        data-i18n="channel"
-                    >
-                        CHANNEL
-                    </span>
+        if (!data.ok) {
 
-                    <h2 data-i18n="addNewChannel">
-                        📢 إضافة قناة
-                    </h2>
+            uploadedMedia = null;
 
-                </div>
+            showToast(
+                data.error || tr("uploadFailed"),
+                "⚠"
+            );
 
-                <button
-                    class="close-button"
-                    id="closeChannelModal"
-                    type="button"
-                >
-                    ×
-                </button>
+            return;
+        }
 
-            </div>
+        uploadedMedia = data;
 
+        showToast("✓", "✓");
 
-            <div class="channel-help">
+    } catch (error) {
 
-                <div class="help-step">
+        console.error(error);
 
-                    <span>1</span>
+        uploadedMedia = null;
 
-                    <p data-i18n="channelStep1">
-                        أضف البوت إلى قناتك كمسؤول.
-                    </p>
+        showToast(tr("uploadFailed"), "⚠");
 
-                </div>
+    }
 
+}
 
-                <div class="help-step">
 
-                    <span>2</span>
+/* =====================================================
+   CUSTOM BUTTONS
+===================================================== */
 
-                    <p data-i18n="channelStep2">
-                        امنحه صلاحية نشر الرسائل.
-                    </p>
+document
+    .getElementById("addButton")
+    ?.addEventListener("click", () => addCustomButton());
 
-                </div>
 
+function addCustomButton(text = "", url = "") {
 
-                <div class="help-step">
+    const row =
+        document.createElement("div");
 
-                    <span>3</span>
+    row.className = "custom-button-row";
 
-                    <p data-i18n="channelStep3">
-                        أدخل اسم مستخدم القناة مثل: @KhaldounSoft
-                    </p>
+    const textInput =
+        document.createElement("input");
 
-                </div>
+    textInput.placeholder = tr("addButtonText");
+    textInput.value = text;
 
-            </div>
+    const urlInput =
+        document.createElement("input");
 
+    urlInput.placeholder = tr("addButtonUrl");
+    urlInput.value = url;
 
-            <label
-                class="field-label"
-                data-i18n="channelUsername"
-            >
-                اسم مستخدم القناة
-            </label>
+    const remove =
+        document.createElement("button");
 
-            <input
-                type="text"
-                id="channelUsername"
-                class="input"
-                placeholder="@KhaldounSoft"
-                autocomplete="off"
-            >
+    remove.className = "remove-button";
+    remove.type = "button";
+    remove.textContent = "×";
 
+    textInput.addEventListener("input", updatePreview);
+    urlInput.addEventListener("input", updatePreview);
 
-            <button
-                class="publish-button"
-                id="verifyChannelButton"
-                type="button"
-            >
+    remove.addEventListener("click", () => {
 
-                🔍
+        row.remove();
 
-                <span data-i18n="verifyChannel">
-                    التحقق من القناة
-                </span>
+        updatePreview();
 
-            </button>
+    });
 
+    row.appendChild(textInput);
+    row.appendChild(urlInput);
+    row.appendChild(remove);
 
-            <div
-                class="channel-message"
-                id="channelMessage"
-            ></div>
+    buttonsContainer.appendChild(row);
 
-        </div>
+    updatePreview();
 
-    </div>
+}
 
 
-    <!-- ============================================= -->
-    <!-- POSTS MODAL                                   -->
-    <!-- ============================================= -->
+/* =====================================================
+   GET CUSTOM BUTTONS
+===================================================== */
 
-    <div
-        class="modal"
-        id="postsModal"
-    >
+function getButtons() {
 
-        <div
-            class="modal-overlay"
-            id="postsModalOverlay"
-        ></div>
+    const result = [];
 
+    const rows =
+        buttonsContainer?.querySelectorAll(
+            ".custom-button-row"
+        ) || [];
 
-        <div class="modal-box">
+    rows.forEach(row => {
 
-            <div class="modal-header">
+        const inputs =
+            row.querySelectorAll("input");
 
-                <div>
+        if (inputs.length < 2) return;
 
-                    <span
-                        class="small-label"
-                        data-i18n="posts"
-                    >
-                        POSTS
-                    </span>
+        const text = inputs[0].value.trim();
+        const url = inputs[1].value.trim();
 
-                    <h2 data-i18n="myPosts">
-                        📋 منشوراتي
-                    </h2>
+        if (
+            text
+            && (
+                url.startsWith("https://")
+                || url.startsWith("http://")
+                || url.startsWith("tg://")
+            )
+        ) {
 
-                </div>
+            result.push({ text, url });
 
-                <button
-                    class="close-button"
-                    id="closePostsModal"
-                    type="button"
-                >
-                    ×
-                </button>
+        }
 
-            </div>
+    });
 
-            <div id="postsList"></div>
+    return result;
 
-        </div>
+}
 
-    </div>
 
+/* =====================================================
+   AUTO DETECT LINKS
+===================================================== */
 
-    <!-- ============================================= -->
-    <!-- TOAST                                         -->
-    <!-- ============================================= -->
+function detectLinks(text) {
 
-    <div
-        class="toast"
-        id="toast"
-    >
+    const buttons = [];
 
-        <span id="toastIcon">
-            ✓
-        </span>
+    if (!smartLinksCheckbox?.checked) {
+        return buttons;
+    }
 
-        <span id="toastMessage">
-            Done
-        </span>
+    const urlRegex = /https?:\/\/[^\s<]+/gi;
 
-    </div>
+    const urls = text.match(urlRegex) || [];
 
+    const unique = [...new Set(urls)];
 
-    <script src="app.js"></script>
+    unique.slice(0, 8).forEach(url => {
 
-</body>
+        buttons.push({
+            text: tr("openLink"),
+            url
+        });
 
-</html>
+    });
+
+    return buttons;
+
+}
+
+
+/* =====================================================
+   UPDATE PREVIEW
+===================================================== */
+
+function updatePreview() {
+
+    if (!previewText || !previewButtons) return;
+
+    const text = postText?.value.trim() || "";
+
+    previewText.textContent =
+        text || tr("previewPlaceholder");
+
+    previewButtons.innerHTML = "";
+
+    const custom = getButtons();
+    const automatic = detectLinks(text);
+
+    const all = [...custom, ...automatic];
+
+    const seen = new Set();
+    const unique = [];
+
+    all.forEach(button => {
+
+        if (seen.has(button.url)) return;
+
+        seen.add(button.url);
+        unique.push(button);
+
+    });
+
+    unique.forEach(button => {
+
+        const element =
+            document.createElement("div");
+
+        element.className = "preview-button";
+        element.textContent = button.text;
+
+        previewButtons.appendChild(element);
+
+    });
+
+}
+
+
+/* =====================================================
+   SMART LINKS TOGGLE
+===================================================== */
+
+smartLinksCheckbox?.addEventListener(
+    "change",
+    updatePreview
+);
+
+
+/* =====================================================
+   PUBLISH
+===================================================== */
+
+document
+    .getElementById("publishButton")
+    ?.addEventListener("click", publish);
+
+
+async function publish() {
+
+    const channelId = postChannel?.value;
+    const text = postText?.value.trim() || "";
+
+    if (!channelId) {
+
+        showToast(tr("chooseChannel"), "⚠");
+        haptic("warning");
+
+        return;
+    }
+
+    if (!text && !uploadedMedia) {
+
+        showToast(tr("emptyPost"), "⚠");
+        haptic("warning");
+
+        return;
+    }
+
+    const buttons = [
+        ...getButtons(),
+        ...detectLinks(text)
+    ];
+
+    const seen = new Set();
+    const uniqueButtons = [];
+
+    buttons.forEach(button => {
+
+        if (seen.has(button.url)) return;
+
+        seen.add(button.url);
+        uniqueButtons.push(button);
+
+    });
+
+    const payload = {
+
+        channel_id: channelId,
+        text,
+        media_type: uploadedMedia?.media_type || null,
+        media_path: uploadedMedia?.path || null,
+        buttons: uniqueButtons
+
+    };
+
+    const publishButton =
+        document.getElementById("publishButton");
+
+    const originalHTML = publishButton.innerHTML;
+
+    publishButton.disabled = true;
+    publishButton.innerHTML = `⏳ ${tr("publishing")}`;
+
+    try {
+
+        const response = await apiFetch(
+            "/api/publish",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            }
+        );
+
+        const data = await response.json();
+
+        if (!data.ok) {
+
+            showToast(
+                data.error || tr("publishFailed"),
+                "⚠"
+            );
+
+            haptic("error");
+
+            return;
+        }
+
+        haptic("success");
+
+        showToast(tr("published"), "🚀");
+
+        resetPost();
+        closePostModal();
+
+    } catch (error) {
+
+        console.error(error);
+
+        showToast(tr("publishFailed"), "⚠");
+        haptic("error");
+
+    } finally {
+
+        publishButton.disabled = false;
+        publishButton.innerHTML = originalHTML;
+
+    }
+
+}
+
+
+/* =====================================================
+   RESET POST FORM
+===================================================== */
+
+function resetPost() {
+
+    if (postText) postText.value = "";
+    if (mediaInput) mediaInput.value = "";
+
+    selectedFile = null;
+    uploadedMedia = null;
+
+    fileInfo?.classList.add("hidden");
+    fileInfo && (fileInfo.textContent = "");
+
+    previewMedia.innerHTML = "";
+    previewMedia?.classList.add("hidden");
+
+    buttonsContainer.innerHTML = "";
+
+    updateCharacterCount();
+    updatePreview();
+
+}
+
+
+/* =====================================================
+   POSTS MODAL
+===================================================== */
+
+document
+    .getElementById("postsButton")
+    ?.addEventListener("click", loadPosts);
+
+document
+    .getElementById("closePostsModal")
+    ?.addEventListener("click", () => {
+
+        postsModal?.classList.remove("show");
+
+    });
+
+document
+    .getElementById("postsModalOverlay")
+    ?.addEventListener("click", () => {
+
+        postsModal?.classList.remove("show");
+
+    });
+
+
+async function loadPosts() {
+
+    try {
+
+        const response = await apiFetch("/api/posts");
+
+        const data = await response.json();
+
+        if (!data.ok) {
+            showToast(tr("unauthorized"), "⚠");
+            return;
+        }
+
+        postsList.innerHTML = "";
+
+        if (!data.posts.length) {
+
+            postsList.innerHTML =
+                `<div class="post-item">${tr("noPosts")}</div>`;
+
+        } else {
+
+            data.posts.forEach(post => {
+
+                const item =
+                    document.createElement("div");
+
+                item.className = "post-item";
+
+                const title =
+                    document.createElement("strong");
+
+                title.textContent =
+                    `#${post.id} · ${post.media_type || "text"}`;
+
+                const content =
+                    document.createElement("p");
+
+                content.textContent =
+                    post.text || "📎 Media post";
+
+                item.appendChild(title);
+                item.appendChild(content);
+
+                postsList.appendChild(item);
+
+            });
+
+        }
+
+        postsModal?.classList.add("show");
+
+        haptic();
+
+    } catch (error) {
+
+        console.error(error);
+
+        showToast("Failed to load posts", "⚠");
+
+    }
+
+}
+
+
+/* =====================================================
+   INIT
+===================================================== */
+
+applyLanguage();
+
+updateCharacterCount();
+
+updatePreview();
+
+loadChannels();
