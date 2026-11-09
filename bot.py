@@ -282,7 +282,6 @@
 #             "  🌐 {lang} · 🕐 {date}\n"
 #         ),
 
-#         # Auto-add notifications
 #         "auto_added_ok": (
 #             "✅ <b>تم ربط القناة تلقائياً!</b>\n\n"
 #             "📢 <b>{title}</b>\n"
@@ -459,7 +458,6 @@
 #             "  🌐 {lang} · 🕐 {date}\n"
 #         ),
 
-#         # Auto-add notifications
 #         "auto_added_ok": (
 #             "✅ <b>Channel linked automatically!</b>\n\n"
 #             "📢 <b>{title}</b>\n"
@@ -488,32 +486,17 @@
 # # =========================================================
 
 # def parse_channel_input(raw: str):
-#     """
-#     Accepts multiple formats and returns a normalized @username or None.
-
-#     Examples:
-#         "@razanaltifa"                      → "@razanaltifa"
-#         "razanaltifa"                       → "@razanaltifa"
-#         "https://t.me/razanaltifa"          → "@razanaltifa"
-#         "t.me/razanaltifa"                  → "@razanaltifa"
-#         "https://telegram.me/razanaltifa"   → "@razanaltifa"
-#         "telegram.me/razanaltifa"           → "@razanaltifa"
-#         "https://t.me/+AbCdEf"              → None (private invite)
-#     """
-
 #     if not raw:
 #         return None
 
 #     text = raw.strip().strip("/")
 
-#     # Detect private invite links
 #     if "+" in text and "t.me" in text.lower():
 #         return None
 
 #     if "joinchat" in text.lower():
 #         return None
 
-#     # Full URLs / short URLs
 #     url_patterns = [
 #         r"^https?://t\.me/([A-Za-z0-9_]+)/?$",
 #         r"^https?://telegram\.me/([A-Za-z0-9_]+)/?$",
@@ -527,16 +510,12 @@
 #         if match:
 #             return "@" + match.group(1)
 
-#     # @username
 #     if text.startswith("@"):
 #         username = text[1:]
-
 #         if re.match(r"^[A-Za-z0-9_]{4,32}$", username):
 #             return "@" + username
-
 #         return None
 
-#     # Plain username
 #     if re.match(r"^[A-Za-z0-9_]{4,32}$", text):
 #         return "@" + text
 
@@ -791,13 +770,11 @@
 
 # @dp.message(CommandStart())
 # async def start_handler(message: Message, state: FSMContext):
-
 #     await state.clear()
 
 #     user = get_user(message.from_user.id)
 
 #     if not user:
-
 #         create_user(message.from_user.id, "ar")
 #         log_stat(message.from_user.id, "start")
 #         touch_user(message.from_user.id)
@@ -806,19 +783,16 @@
 #             "🌐 <b>Choose your language / اختر اللغة</b>",
 #             reply_markup=language_keyboard()
 #         )
-
 #         return
 
 #     touch_user(message.from_user.id)
 #     log_stat(message.from_user.id, "start")
 
 #     language = user["language"]
-
 #     await send_main_menu(message, language)
 
 
 # async def send_main_menu(message: Message, language):
-
 #     channels_count = len(get_channels(message.from_user.id))
 #     posts_count = get_posts_count(message.from_user.id)
 
@@ -850,13 +824,16 @@
 
 # @dp.callback_query(F.data.startswith("lang_"))
 # async def language_callback(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     await state.clear()
 
 #     language = callback.data.replace("lang_", "")
 
 #     if language not in ("ar", "en"):
-#         await callback.answer()
 #         return
 
 #     set_language(callback.from_user.id, language)
@@ -879,12 +856,9 @@
 
 #     await send_main_menu(callback.message, language)
 
-#     await callback.answer()
-
 
 # @dp.message(F.text.in_(["🌐 اللغة", "🌐 Language"]))
 # async def change_language(message: Message):
-
 #     await message.answer(
 #         "🌐 اختر اللغة / Choose language:",
 #         reply_markup=language_keyboard()
@@ -897,6 +871,10 @@
 
 # @dp.callback_query(F.data == "menu:home")
 # async def menu_home(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     await state.clear()
 
@@ -921,21 +899,20 @@
 #         main_inline_keyboard(language)
 #     )
 
-#     await callback.answer()
-
 
 # @dp.message(F.text.in_(["🏠 الرئيسية", "🏠 Home"]))
 # async def home_reply(message: Message, state: FSMContext):
-
 #     await state.clear()
-
 #     language = get_language(message.from_user.id)
-
 #     await send_main_menu(message, language)
 
 
 # @dp.callback_query(F.data == "menu:language")
 # async def menu_language(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     await state.clear()
 
@@ -945,11 +922,13 @@
 #         language_keyboard()
 #     )
 
-#     await callback.answer()
-
 
 # @dp.callback_query(F.data == "menu:stats")
 # async def menu_stats(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     await state.clear()
 
@@ -973,12 +952,9 @@
 #         back_home_keyboard(language)
 #     )
 
-#     await callback.answer()
-
 
 # @dp.message(F.text.in_(["📊 الإحصائيات", "📊 Statistics"]))
 # async def stats_reply(message: Message, state: FSMContext):
-
 #     await state.clear()
 
 #     language = get_language(message.from_user.id)
@@ -1003,11 +979,8 @@
 
 # @dp.message(F.text.in_(["ℹ️ المساعدة", "ℹ️ Help"]))
 # async def help_handler(message: Message, state: FSMContext):
-
 #     await state.clear()
-
 #     language = get_language(message.from_user.id)
-
 #     await message.answer(t(language, "help_text"))
 
 
@@ -1017,43 +990,37 @@
 
 # @dp.message(Command("addchannel"))
 # async def addchannel_cmd(message: Message, state: FSMContext):
-
 #     await state.clear()
-
 #     language = get_language(message.from_user.id)
-
 #     await message.answer(
 #         t(language, "add_channel_help"),
 #         reply_markup=cancel_keyboard(language),
 #         disable_web_page_preview=True
 #     )
-
 #     await state.set_state(ChannelFlow.waiting_username)
 
 
 # @dp.message(F.text.in_(["📢 قنواتي", "📢 My Channels"]))
 # async def channels_reply(message: Message, state: FSMContext):
-
 #     await state.clear()
-
 #     language = get_language(message.from_user.id)
-
 #     await show_channels(message, language)
 
 
 # @dp.callback_query(F.data == "menu:channels")
 # async def menu_channels(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     await state.clear()
 
 #     language = get_language(callback.from_user.id)
-
 #     channels = get_channels(callback.from_user.id)
 
 #     if not channels:
-
 #         text = t(language, "no_channels")
-
 #         await safe_edit_or_send(
 #             callback,
 #             text,
@@ -1074,20 +1041,14 @@
 #                 ]
 #             )
 #         )
-
-#         await callback.answer()
 #         return
 
 #     text = t(language, "channel_list")
-
 #     buttons = []
 
 #     for channel in channels:
-
 #         username = channel["username"] or channel["title"]
-
 #         text += f"• <b>{username}</b>\n"
-
 #         buttons.append(
 #             [
 #                 InlineKeyboardButton(
@@ -1105,7 +1066,6 @@
 #             )
 #         ]
 #     )
-
 #     buttons.append(
 #         [
 #             InlineKeyboardButton(
@@ -1121,15 +1081,11 @@
 #         InlineKeyboardMarkup(inline_keyboard=buttons)
 #     )
 
-#     await callback.answer()
-
 
 # async def show_channels(message: Message, language):
-
 #     channels = get_channels(message.from_user.id)
 
 #     if not channels:
-
 #         await message.answer(
 #             t(language, "no_channels"),
 #             reply_markup=InlineKeyboardMarkup(
@@ -1146,15 +1102,11 @@
 #         return
 
 #     text = t(language, "channel_list")
-
 #     buttons = []
 
 #     for channel in channels:
-
 #         username = channel["username"] or channel["title"]
-
 #         text += f"• <b>{username}</b>\n"
-
 #         buttons.append(
 #             [
 #                 InlineKeyboardButton(
@@ -1181,6 +1133,10 @@
 
 # @dp.callback_query(F.data == "channel:add")
 # async def channel_add_cb(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     language = get_language(callback.from_user.id)
 
@@ -1192,24 +1148,22 @@
 
 #     await state.set_state(ChannelFlow.waiting_username)
 
-#     await callback.answer()
-
 
 # @dp.callback_query(F.data.startswith("channel:del:"))
 # async def channel_del_confirm(callback: CallbackQuery):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     channel_id = callback.data.split(":", 2)[2]
-
 #     language = get_language(callback.from_user.id)
-
 #     channel = get_channel(callback.from_user.id, channel_id)
 
 #     if not channel:
-#         await callback.answer("⚠️")
 #         return
 
 #     username = channel["username"] or channel["title"]
-
 #     text = t(language, "confirm_delete_channel").format(username)
 
 #     await safe_edit_or_send(
@@ -1218,16 +1172,16 @@
 #         confirm_delete_keyboard(language, channel_id)
 #     )
 
-#     await callback.answer()
-
 
 # @dp.callback_query(F.data.startswith("channel:delete:"))
 # async def channel_delete(callback: CallbackQuery):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     channel_id = callback.data.split(":", 2)[2]
-
 #     language = get_language(callback.from_user.id)
-
 #     delete_channel(callback.from_user.id, channel_id)
 
 #     await safe_edit_or_send(
@@ -1235,8 +1189,6 @@
 #         t(language, "channel_deleted"),
 #         back_home_keyboard(language)
 #     )
-
-#     await callback.answer()
 
 
 # # =========================================================
@@ -1248,64 +1200,40 @@
 #     message: Message,
 #     state: FSMContext
 # ):
-
 #     raw = (message.text or "").strip()
-
 #     language = get_language(message.from_user.id)
 
-#     # -----------------------------------------------------
-#     # Detect private invite
-#     # -----------------------------------------------------
-
 #     if ("+" in raw and "t.me" in raw.lower()) or "joinchat" in raw.lower():
-
 #         await message.answer(
 #             t(language, "channel_private_link"),
 #             disable_web_page_preview=True
 #         )
 #         return
 
-#     # -----------------------------------------------------
-#     # Parse input
-#     # -----------------------------------------------------
-
 #     username = parse_channel_input(raw)
 
 #     if not username:
-
 #         await message.answer(
 #             t(language, "channel_invalid_format"),
 #             disable_web_page_preview=True
 #         )
 #         return
 
-#     # -----------------------------------------------------
-#     # Verify with Telegram
-#     # -----------------------------------------------------
-
 #     try:
-
 #         chat = await bot.get_chat(chat_id=username)
 
 #         if chat.type != "channel":
-
-#             await message.answer(
-#                 t(language, "not_a_channel")
-#             )
+#             await message.answer(t(language, "not_a_channel"))
 #             return
 
 #         me = await bot.get_me()
-
 #         member = await bot.get_chat_member(
 #             chat_id=chat.id,
 #             user_id=me.id
 #         )
 
 #         if member.status != ChatMemberStatus.ADMINISTRATOR:
-
-#             await message.answer(
-#                 t(language, "not_admin")
-#             )
+#             await message.answer(t(language, "not_admin"))
 #             return
 
 #         can_post = getattr(
@@ -1315,10 +1243,7 @@
 #         )
 
 #         if not can_post:
-
-#             await message.answer(
-#                 t(language, "not_can_post")
-#             )
+#             await message.answer(t(language, "not_can_post"))
 #             return
 
 #         channel_username = (
@@ -1351,40 +1276,19 @@
 #         )
 
 #     except TelegramBadRequest as e:
-
 #         error_text = str(e).lower()
-
-#         logger.error(
-#             "TelegramBadRequest verifying %s: %s",
-#             username,
-#             e
-#         )
+#         logger.error("TelegramBadRequest verifying %s: %s", username, e)
 
 #         if "chat not found" in error_text:
-
-#             await message.answer(
-#                 t(language, "channel_not_found")
-#             )
-
+#             await message.answer(t(language, "channel_not_found"))
 #         elif "not enough rights" in error_text:
-
-#             await message.answer(
-#                 "❌ البوت لا يملك صلاحيات كافية."
-#             )
-
+#             await message.answer("❌ البوت لا يملك صلاحيات كافية.")
 #         else:
-
-#             await message.answer(
-#                 f"❌ <code>{str(e)[:300]}</code>"
-#             )
+#             await message.answer(f"❌ <code>{str(e)[:300]}</code>")
 
 #     except Exception:
-
 #         logger.exception("Channel verification failed")
-
-#         await message.answer(
-#             "❌ حدث خطأ. راجع logs."
-#         )
+#         await message.answer("❌ حدث خطأ. راجع logs.")
 
 
 # # =========================================================
@@ -1393,48 +1297,29 @@
 
 # @dp.my_chat_member()
 # async def on_my_chat_member(update: ChatMemberUpdated):
-
 #     chat = update.chat
 #     new_status = update.new_chat_member.status
 #     old_status = update.old_chat_member.status
 
-#     # Only care about channels
 #     if chat.type != "channel":
 #         return
-
-#     # -----------------------------------------------------
-#     # Bot was added as administrator
-#     # -----------------------------------------------------
 
 #     if (
 #         new_status == ChatMemberStatus.ADMINISTRATOR
 #         and old_status != ChatMemberStatus.ADMINISTRATOR
 #     ):
-
 #         can_post = getattr(
 #             update.new_chat_member,
 #             "can_post_messages",
 #             False
 #         )
-
 #         adder = update.from_user
 
 #         if not adder:
-#             logger.warning(
-#                 "Bot added to channel %s but no from_user",
-#                 chat.id
-#             )
 #             return
 
 #         user = get_user(adder.id)
-
 #         if not user:
-
-#             logger.info(
-#                 "Bot added to channel %s by user %s (not started)",
-#                 chat.id,
-#                 adder.id
-#             )
 #             return
 
 #         channel_username = (
@@ -1450,16 +1335,10 @@
 #             title=chat.title or channel_username
 #         )
 
-#         log_stat(
-#             adder.id,
-#             "channel_added_auto",
-#             channel_username
-#         )
-
+#         log_stat(adder.id, "channel_added_auto", channel_username)
 #         language = user["language"]
 
 #         try:
-
 #             if can_post:
 #                 note = t(language, "auto_added_ok").format(
 #                     title=chat.title or channel_username,
@@ -1476,27 +1355,14 @@
 #                 text=note,
 #                 disable_web_page_preview=True
 #             )
-
 #         except Exception:
-
-#             logger.exception(
-#                 "Could not notify user %s",
-#                 adder.id
-#             )
-
-#     # -----------------------------------------------------
-#     # Bot was removed from channel
-#     # -----------------------------------------------------
+#             logger.exception("Could not notify user %s", adder.id)
 
 #     elif new_status in (
 #         ChatMemberStatus.LEFT,
 #         ChatMemberStatus.KICKED,
 #     ):
-
-#         logger.info(
-#             "Bot removed from channel %s",
-#             chat.id
-#         )
+#         logger.info("Bot removed from channel %s", chat.id)
 
 
 # # =========================================================
@@ -1505,20 +1371,19 @@
 
 # @dp.message(F.text.in_(["✨ إنشاء منشور", "✨ Create Post"]))
 # async def create_post_reply(message: Message, state: FSMContext):
-
 #     await state.clear()
-
 #     await start_post_flow(message, state)
 
 
 # @dp.callback_query(F.data == "menu:create")
 # async def create_post_cb(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     await state.clear()
-
 #     await start_post_flow(callback.message, state, from_callback=True)
-
-#     await callback.answer()
 
 
 # async def start_post_flow(
@@ -1526,15 +1391,11 @@
 #     state: FSMContext,
 #     from_callback=False
 # ):
-
 #     language = get_language(message.chat.id)
-
 #     channels = get_channels(message.chat.id)
 
 #     if not channels:
-
 #         text = t(language, "no_channel_available")
-
 #         if from_callback:
 #             try:
 #                 await message.edit_text(text)
@@ -1542,15 +1403,11 @@
 #                 await message.answer(text)
 #         else:
 #             await message.answer(text)
-
 #         return
 
 #     buttons = []
-
 #     for channel in channels:
-
 #         username = channel["username"] or channel["title"]
-
 #         buttons.append(
 #             [
 #                 InlineKeyboardButton(
@@ -1570,44 +1427,31 @@
 #     )
 
 #     text = t(language, "choose_channel")
+#     reply_markup = InlineKeyboardMarkup(inline_keyboard=buttons)
 
 #     if from_callback:
 #         try:
-#             await message.edit_text(
-#                 text,
-#                 reply_markup=InlineKeyboardMarkup(
-#                     inline_keyboard=buttons
-#                 )
-#             )
+#             await message.edit_text(text, reply_markup=reply_markup)
 #         except Exception:
-#             await message.answer(
-#                 text,
-#                 reply_markup=InlineKeyboardMarkup(
-#                     inline_keyboard=buttons
-#                 )
-#             )
+#             await message.answer(text, reply_markup=reply_markup)
 #     else:
-#         await message.answer(
-#             text,
-#             reply_markup=InlineKeyboardMarkup(
-#                 inline_keyboard=buttons
-#             )
-#         )
+#         await message.answer(text, reply_markup=reply_markup)
 
 #     await state.set_state(PostFlow.choosing_channel)
 
 
 # @dp.callback_query(PostFlow.choosing_channel, F.data.startswith("post:channel:"))
 # async def post_choose_channel(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     channel_id = callback.data.split(":", 2)[2]
-
 #     language = get_language(callback.from_user.id)
-
 #     channel = get_channel(callback.from_user.id, channel_id)
 
 #     if not channel:
-#         await callback.answer("⚠️")
 #         return
 
 #     await state.update_data(
@@ -1627,14 +1471,10 @@
 
 #     await state.set_state(PostFlow.waiting_text)
 
-#     await callback.answer()
-
 
 # @dp.message(PostFlow.waiting_text)
 # async def post_receive_text(message: Message, state: FSMContext):
-
 #     language = get_language(message.from_user.id)
-
 #     text = (message.text or "").strip()
 
 #     if not text:
@@ -1657,15 +1497,10 @@
 
 # @dp.message(PostFlow.waiting_media, F.photo)
 # async def post_receive_photo(message: Message, state: FSMContext):
-
 #     language = get_language(message.from_user.id)
-
 #     photo = message.photo[-1]
-
 #     file = await bot.get_file(photo.file_id)
-
 #     path = UPLOAD_DIR / f"{photo.file_unique_id}.jpg"
-
 #     await bot.download_file(file.file_path, destination=path)
 
 #     await state.update_data(
@@ -1677,23 +1512,16 @@
 #         t(language, "media_received"),
 #         reply_markup=cancel_keyboard(language)
 #     )
-
 #     await ask_buttons(message, state, language)
 
 
 # @dp.message(PostFlow.waiting_media, F.video)
 # async def post_receive_video(message: Message, state: FSMContext):
-
 #     language = get_language(message.from_user.id)
-
 #     video = message.video
-
 #     file = await bot.get_file(video.file_id)
-
 #     ext = (video.file_name or "video.mp4").split(".")[-1]
-
 #     path = UPLOAD_DIR / f"{video.file_unique_id}.{ext}"
-
 #     await bot.download_file(file.file_path, destination=path)
 
 #     await state.update_data(
@@ -1705,23 +1533,16 @@
 #         t(language, "media_received"),
 #         reply_markup=cancel_keyboard(language)
 #     )
-
 #     await ask_buttons(message, state, language)
 
 
 # @dp.message(PostFlow.waiting_media, F.document)
 # async def post_receive_document(message: Message, state: FSMContext):
-
 #     language = get_language(message.from_user.id)
-
 #     doc = message.document
-
 #     file = await bot.get_file(doc.file_id)
-
 #     ext = (doc.file_name or "file.bin").split(".")[-1]
-
 #     path = UPLOAD_DIR / f"{doc.file_unique_id}.{ext}"
-
 #     await bot.download_file(file.file_path, destination=path)
 
 #     await state.update_data(
@@ -1733,18 +1554,18 @@
 #         t(language, "media_received"),
 #         reply_markup=cancel_keyboard(language)
 #     )
-
 #     await ask_buttons(message, state, language)
 
 
 # @dp.callback_query(PostFlow.waiting_media, F.data == "flow:skip_media")
 # async def post_skip_media(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     language = get_language(callback.from_user.id)
-
 #     await ask_buttons(callback.message, state, language, from_callback=callback)
-
-#     await callback.answer()
 
 
 # async def ask_buttons(
@@ -1753,9 +1574,7 @@
 #     language,
 #     from_callback=None
 # ):
-
 #     await state.update_data(buttons=[])
-
 #     text = t(language, "buttons_info")
 
 #     if from_callback:
@@ -1775,24 +1594,22 @@
 
 # @dp.callback_query(PostFlow.waiting_buttons, F.data == "flow:add_button")
 # async def post_add_button(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     language = get_language(callback.from_user.id)
-
 #     await callback.message.answer(
 #         t(language, "button_text_prompt"),
 #         reply_markup=cancel_keyboard(language)
 #     )
-
 #     await state.set_state(ButtonFlow.waiting_text)
-
-#     await callback.answer()
 
 
 # @dp.message(ButtonFlow.waiting_text)
 # async def button_receive_text(message: Message, state: FSMContext):
-
 #     language = get_language(message.from_user.id)
-
 #     text = (message.text or "").strip()
 
 #     if not text:
@@ -1800,61 +1617,49 @@
 #         return
 
 #     await state.update_data(button_text=text)
-
 #     await message.answer(
 #         t(language, "button_url_prompt"),
 #         reply_markup=cancel_keyboard(language)
 #     )
-
 #     await state.set_state(ButtonFlow.waiting_url)
 
 
 # @dp.message(ButtonFlow.waiting_url)
 # async def button_receive_url(message: Message, state: FSMContext):
-
 #     language = get_language(message.from_user.id)
-
 #     url = (message.text or "").strip()
 
 #     if not (url.startswith("https://") or url.startswith("http://")):
-
 #         await message.answer(t(language, "button_invalid_url"))
 #         return
 
 #     data = await state.get_data()
-
 #     button_text = data.get("button_text")
-
 #     buttons = data.get("buttons", [])
-
 #     buttons.append({"text": button_text, "url": url})
 
 #     await state.update_data(buttons=buttons)
-
 #     await message.answer(
 #         t(language, "button_added"),
 #         reply_markup=buttons_keyboard(language)
 #     )
-
 #     await state.set_state(PostFlow.waiting_buttons)
 
 
 # @dp.callback_query(PostFlow.waiting_buttons, F.data == "flow:buttons_done")
 # async def post_buttons_done(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     language = get_language(callback.from_user.id)
-
 #     data = await state.get_data()
-
 #     await show_preview(callback, data, language)
-
 #     await state.set_state(PostFlow.previewing)
-
-#     await callback.answer()
 
 
 # async def show_preview(callback: CallbackQuery, data, language):
-
 #     text = data.get("text") or ""
 #     channel = data.get("channel_username") or "—"
 #     media_type = data.get("media_type")
@@ -1889,9 +1694,12 @@
 
 # @dp.callback_query(PostFlow.previewing, F.data == "flow:publish")
 # async def post_publish(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     language = get_language(callback.from_user.id)
-
 #     data = await state.get_data()
 
 #     channel_id = data.get("channel_id")
@@ -1901,19 +1709,15 @@
 #     buttons = data.get("buttons") or []
 
 #     if not channel_id:
-#         await callback.answer("⚠️")
 #         return
 
 #     channel = get_channel(callback.from_user.id, channel_id)
-
 #     if not channel:
-#         await callback.answer("⚠️")
 #         return
 
 #     keyboard = build_inline_keyboard(buttons)
 
 #     try:
-
 #         message_id = await publish_to_channel(
 #             target=channel["channel_id"],
 #             text=text,
@@ -1941,19 +1745,13 @@
 #             back_home_keyboard(language)
 #         )
 
-#         await callback.answer("✅")
-
 #     except Exception as e:
-
 #         logger.exception("Publish failed")
-
 #         await safe_edit_or_send(
 #             callback,
 #             t(language, "publish_failed").format(str(e)[:200]),
 #             back_home_keyboard(language)
 #         )
-
-#         await callback.answer("❌")
 
 #     await state.clear()
 
@@ -1965,8 +1763,6 @@
 #     media_path,
 #     keyboard
 # ):
-#     """Returns message_id of published message."""
-
 #     if media_type == "photo":
 #         msg = await bot.send_photo(
 #             chat_id=target,
@@ -2001,18 +1797,18 @@
 
 # @dp.callback_query(F.data == "flow:cancel")
 # async def flow_cancel(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     await state.clear()
-
 #     language = get_language(callback.from_user.id)
-
 #     await safe_edit_or_send(
 #         callback,
 #         t(language, "cancelled"),
 #         back_home_keyboard(language)
 #     )
-
-#     await callback.answer()
 
 
 # # =========================================================
@@ -2021,42 +1817,34 @@
 
 # @dp.message(F.text.in_(["📋 منشوراتي", "📋 My Posts"]))
 # async def my_posts_reply(message: Message, state: FSMContext):
-
 #     await state.clear()
-
 #     language = get_language(message.from_user.id)
-
 #     await show_posts(message, language)
 
 
 # @dp.callback_query(F.data == "menu:posts")
 # async def menu_posts(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     await state.clear()
-
 #     language = get_language(callback.from_user.id)
-
 #     posts = get_posts(callback.from_user.id, limit=20)
 
 #     if not posts:
-
 #         await safe_edit_or_send(
 #             callback,
 #             t(language, "no_posts"),
 #             back_home_keyboard(language)
 #         )
-
-#         await callback.answer()
 #         return
 
 #     buttons = []
-
 #     for post in posts:
-
 #         preview = (post["text"] or "")[:30].replace("\n", " ")
-
 #         label = f"#{post['id']} · {preview or '📎'}"
-
 #         buttons.append(
 #             [
 #                 InlineKeyboardButton(
@@ -2081,15 +1869,11 @@
 #         InlineKeyboardMarkup(inline_keyboard=buttons)
 #     )
 
-#     await callback.answer()
-
 
 # async def show_posts(message: Message, language):
-
 #     posts = get_posts(message.from_user.id, limit=20)
 
 #     if not posts:
-
 #         await message.answer(
 #             t(language, "no_posts"),
 #             reply_markup=back_home_keyboard(language)
@@ -2097,13 +1881,9 @@
 #         return
 
 #     buttons = []
-
 #     for post in posts:
-
 #         preview = (post["text"] or "")[:30].replace("\n", " ")
-
 #         label = f"#{post['id']} · {preview or '📎'}"
-
 #         buttons.append(
 #             [
 #                 InlineKeyboardButton(
@@ -2121,17 +1901,17 @@
 
 # @dp.callback_query(F.data.startswith("post:view:"))
 # async def post_view(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     await state.clear()
-
 #     post_id = int(callback.data.split(":")[2])
-
 #     language = get_language(callback.from_user.id)
-
 #     post = get_post(callback.from_user.id, post_id)
 
 #     if not post:
-#         await callback.answer("⚠️")
 #         return
 
 #     text = post["text"] or "—"
@@ -2167,39 +1947,32 @@
 
 #     await safe_edit_or_send(callback, body, buttons)
 
-#     await callback.answer()
-
 
 # @dp.callback_query(F.data.startswith("post:edit:"))
 # async def post_edit_start(callback: CallbackQuery, state: FSMContext):
+#     try:
+#         await callback.answer()
+#     except Exception:
+#         pass
 
 #     post_id = int(callback.data.split(":")[2])
-
 #     language = get_language(callback.from_user.id)
-
 #     post = get_post(callback.from_user.id, post_id)
 
 #     if not post:
-#         await callback.answer("⚠️")
 #         return
 
 #     await state.update_data(edit_post_id=post_id)
-
 #     await callback.message.answer(
 #         t(language, "edit_prompt"),
 #         reply_markup=cancel_keyboard(language)
 #     )
-
 #     await state.set_state(EditFlow.waiting_new_text)
-
-#     await callback.answer()
 
 
 # @dp.message(EditFlow.waiting_new_text)
 # async def post_edit_apply(message: Message, state: FSMContext):
-
 #     language = get_language(message.from_user.id)
-
 #     new_text = (message.text or "").strip()
 
 #     if not new_text:
@@ -2212,7 +1985,6 @@
 
 #     data = await state.get_data()
 #     post_id = data.get("edit_post_id")
-
 #     post = get_post(message.from_user.id, post_id)
 
 #     if not post:
@@ -2221,30 +1993,25 @@
 #         return
 
 #     channel = get_channel(message.from_user.id, post["channel_id"])
-
 #     if not channel:
 #         await message.answer(t(language, "edit_no_channel"))
 #         await state.clear()
 #         return
 
 #     message_id = post["message_id"]
-
 #     if not message_id:
 #         await message.answer(t(language, "edit_no_message_id"))
 #         await state.clear()
 #         return
 
 #     try:
-
 #         if post["media_type"]:
-
 #             await bot.edit_message_caption(
 #                 chat_id=channel["channel_id"],
 #                 message_id=message_id,
 #                 caption=new_text[:1024]
 #             )
 #         else:
-
 #             await bot.edit_message_text(
 #                 chat_id=channel["channel_id"],
 #                 message_id=message_id,
@@ -2269,15 +2036,11 @@
 #         )
 
 #     except TelegramBadRequest as e:
-
 #         await message.answer(
 #             t(language, "edit_failed").format(str(e)[:200])
 #         )
-
 #     except Exception as e:
-
 #         logger.exception("Edit failed")
-
 #         await message.answer(
 #             t(language, "edit_failed").format(str(e)[:200])
 #         )
@@ -2291,12 +2054,10 @@
 
 # @dp.message(Command("admin"))
 # async def admin_command(message: Message):
-
 #     if message.from_user.id != ADMIN_ID:
 #         return
 
 #     stats = get_bot_stats()
-
 #     text = (
 #         f"{t('ar', 'admin_title')}\n"
 #         "━━━━━━━━━━━━━━━━━━\n\n"
@@ -2308,22 +2069,18 @@
 #             posts=stats["total_posts"]
 #         )
 #     )
-
 #     await message.answer(text)
 
 
 # @dp.message(Command("users"))
 # async def admin_users(message: Message):
-
 #     if message.from_user.id != ADMIN_ID:
 #         return
 
 #     users = get_all_users(limit=20)
-
 #     text = t("ar", "admin_users")
 
 #     for u in users:
-
 #         text += t("ar", "admin_user_row").format(
 #             tid=u["telegram_id"],
 #             lang=u["language"],
@@ -2339,14 +2096,11 @@
 
 # @dp.message()
 # async def fallback(message: Message, state: FSMContext):
-
 #     current = await state.get_state()
-
 #     if current is not None:
 #         return
 
 #     language = get_language(message.from_user.id)
-
 #     await send_main_menu(message, language)
 
 
@@ -2355,22 +2109,18 @@
 # # =========================================================
 
 # async def main():
-
 #     init_db()
 
-#     # Delete any pending webhook to allow polling
 #     try:
 #         await bot.delete_webhook(drop_pending_updates=False)
 #     except Exception:
 #         pass
 
 #     logger.info("Telegram Publisher Bot started (no web)")
-
 #     await dp.start_polling(bot)
 
 
 # if __name__ == "__main__":
-
 #     try:
 #         asyncio.run(main())
 #     except KeyboardInterrupt:
@@ -2385,7 +2135,6 @@ import os
 import re
 
 from pathlib import Path
-
 from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher, F
@@ -2498,360 +2247,273 @@ class ButtonFlow(StatesGroup):
 
 
 # =========================================================
-# TRANSLATIONS
+# TRANSLATIONS & DESIGNS
 # =========================================================
 
 TEXTS = {
     "ar": {
-        "main_title": "⚡ <b>Telegram Publisher</b>",
+        "main_title": "✨ <b>منصة النشر الاحترافي المتطورة</b> 🚀",
         "welcome": (
-            "أهلاً بك 👋\n\n"
-            "أنشئ منشوراتك وانشرها لقنواتك بسهولة."
+            "مرحباً بك أهلاً وسهلاً 👋\n\n"
+            "استمتع بإدارة قنواتك ومجموعاتك ونشر المحتوى بتصميم أنيق ومميز."
         ),
         "stats_line": (
-            "📢 القنوات: <b>{channels}</b>\n"
-            "📝 المنشورات: <b>{posts}</b>"
+            "📢 القنوات والمجموعات المضافة: <b>{channels}</b>\n"
+            "📝 إجمالي المنشورات الصادرة: <b>{posts}</b>"
         ),
-        "choose_language": "🌐 اختر لغة البوت:",
-        "language_saved_ar": "✅ تم اختيار اللغة العربية.",
-        "language_saved_en": "✅ English selected.",
+        "choose_language": "🌐 اختر لغة البوت المفضلة لديك:",
+        "language_saved_ar": "✅ تم تفعيل اللغة العربية بنجاح.",
+        "language_saved_en": "✅ English language activated.",
 
-        "btn_create_post": "✨ إنشاء منشور",
-        "btn_my_channels": "📢 قنواتي",
-        "btn_my_posts": "📋 منشوراتي",
-        "btn_stats": "📊 الإحصائيات",
-        "btn_language": "🌐 اللغة",
-        "btn_home": "🏠 الرئيسية",
-        "btn_help": "ℹ️ المساعدة",
-        "btn_add_channel": "➕ إضافة قناة",
-        "btn_back": "◀️ رجوع",
-        "btn_cancel": "❌ إلغاء",
-        "btn_skip": "⏭️ تخطي",
-        "btn_done": "✅ تم",
-        "btn_publish": "🚀 نشر",
-        "btn_preview": "👀 معاينة",
-        "btn_edit": "✏️ تعديل النص",
-        "btn_delete": "🗑️ حذف",
+        "btn_create_post": "✨ إنشاء منشور جديد",
+        "btn_my_channels": "📢 إدارة القنوات والمجموعات",
+        "btn_my_posts": "📋 أرشيف المنشورات",
+        "btn_stats": "📊 إحصاءات الاستخدام",
+        "btn_language": "🌐 تغيير اللغة",
+        "btn_home": "🏠 القائمة الرئيسية",
+        "btn_help": "ℹ️ دليل الاستخدام",
+        "btn_add_channel": "➕ ربط قناة أو مجموعة جديدة",
+        "btn_back": "◀️ عودة للسابق",
+        "btn_cancel": "❌ إلغاء العملية",
+        "btn_skip": "⏭️ تخطي هذه الخطوة",
+        "btn_done": "✅ إنهاء وإضافة الأزرار",
+        "btn_publish": "🚀 نشر الآن في الوجهة",
+        "btn_preview": "👀 معاينة المنشور",
+        "btn_edit": "✏️ تعديل النص الحالي",
+        "btn_delete": "🗑️ حذف نهائي",
 
         "no_channels": (
-            "ليس لديك أي قناة.\n\n"
-            "استخدم /addchannel لإضافة قناة."
+            "⚠️ <b>عذراً، لا توجد أي قناة أو مجموعة مرتبطة بحسابك.</b>\n\n"
+            "قم بإضافة البوت مشرفاً (أدمن) في قناتك أو مجموعتك، أو استخدم /addchannel للإضافة اليدوية."
         ),
-        "channel_list": "📢 <b>قنواتك:</b>\n\n",
-        "channel_added": "✅ تمت إضافة القناة:\n<b>{}</b>",
-        "channel_deleted": "🗑️ تم حذف القناة.",
-        "confirm_delete_channel": "هل تريد حذف القناة <b>{}</b>؟",
-        "delete_confirm_yes": "🗑️ نعم، احذف",
-        "delete_confirm_no": "❌ لا",
+        "channel_list": "📢 <b>قنواتك ومجموعاتك المرتبطة:</b>\n\n",
+        "channel_added": "✅ تم ربط الوجهة بنجاح:\n<b>{}</b>",
+        "channel_deleted": "🗑️ تم إزالة ربط الوجهة بنجاح.",
+        "confirm_delete_channel": "هل أنت متأكد من رغبتك في حذف وإلغاء ربط الوجهة <b>{}</b>؟",
+        "delete_confirm_yes": "🗑️ نعم، احذف الوجهة",
+        "delete_confirm_no": "❌ تراجع وإلغاء",
 
         "add_channel_help": (
-            "➕ <b>إضافة قناة</b>\n\n"
-            "🔹 <b>الطريقة 1 — تلقائية (الأسهل):</b>\n"
-            "أضف البوت كمسؤول في قناتك، وسيتم ربطها تلقائياً ✅\n\n"
-            "🔹 <b>الطريقة 2 — يدوية:</b>\n"
-            "أرسل أحد الصيغ التالية:\n"
-            "• <code>@razanaltifa</code>\n"
-            "• <code>razanaltifa</code>\n"
-            "• <code>https://t.me/razanaltifa</code>\n\n"
-            "⚠️ الروابط الخاصة (<code>+</code>) غير مدعومة."
+            "➕ <b>إضافة وجهة جديدة (قناة أو مجموعة)</b>\n\n"
+            "🔹 <b>الطريقة الأسهل والأسرع:</b>\n"
+            "فقط قم بإضافة البوت مشرفاً (Administrator) في قناتك أو مجموعتك، وسيتم ربطها وتفعيلها **تلقائياً** بصلاحيات النشر! ✅\n\n"
+            "🔹 <b>الطريقة اليدوية:</b>\n"
+            "أرسل معرف الوجهة أو الرابط بهذا الشكل:\n"
+            "• <code>@YourChannelUsername</code>\n"
+            "• <code>https://t.me/YourChannelUsername</code>"
         ),
         "channel_private_link": (
-            "❌ <b>لا يمكن إضافة الروابط الخاصة (Invite Links).</b>\n\n"
-            "استخدم أحد هذه الصيغ:\n"
-            "• <code>@razanaltifa</code>\n"
-            "• <code>https://t.me/razanaltifa</code>\n\n"
-            "أو أضف البوت كمسؤول في القناة وسيتم حفظها تلقائياً ✅"
+            "❌ <b>عذراً، الروابط الخاصة (Invite Links التي تحتوى على +) غير مدعومة حالياً.</b>\n\n"
+            "قم بإضافة البوت مشرفاً مباشرة في القناة أو المجموعة وسيتم ربطها تلقائياً بكل سهولة."
         ),
         "channel_invalid_format": (
-            "⚠️ <b>صيغة غير صحيحة.</b>\n\n"
-            "أرسل أحد هذه الصيغ:\n"
-            "• <code>@razanaltifa</code>\n"
-            "• <code>razanaltifa</code>\n"
-            "• <code>https://t.me/razanaltifa</code>"
+            "⚠️ <b>الصيغة المدخلة غير صحيحة.</b>\n\n"
+            "يرجى إرسال المعرف أو الرابط بشكل صحيح مثل:\n"
+            "• <code>@ChannelName</code>"
         ),
         "channel_not_found": (
-            "❌ <b>لم يتم العثور على القناة.</b>\n\n"
-            "تأكد من الرابط أو Username."
+            "❌ <b>لم يتم العثور على الوجهة.</b>\n\n"
+            "تأكد من صحة الرابط أو المعرف وأن البوت يمتلك صلاحية الوصول إليها."
         ),
         "not_admin": (
-            "❌ <b>البوت ليس مسؤولاً في هذه القناة.</b>\n\n"
-            "أضف البوت كمسؤول ثم حاول مجدداً."
+            "❌ <b>البوت ليس مشرفاً (Admin) في هذه الوجهة.</b>\n\n"
+            "يرجى منح البوت صلاحية الإشراف ثم حاول مرة أخرى."
         ),
         "not_can_post": (
-            "❌ <b>البوت مسؤول لكنه لا يملك صلاحية نشر الرسائل.</b>\n\n"
-            "اذهب إلى:\n"
-            "إدارة القناة → المسؤولون → البوت\n"
-            "وفعّل: ✅ نشر الرسائل"
+            "❌ <b>البوت مشرف ولكن لا يمتلك صلاحية نشر الرسائل.</b>\n\n"
+            "الرجاء الذهاب إلى: إدارة القناة/المجموعة ← المسؤولون ← اختر البوت ← وقم بتفعيل **(نشر الرسائل)**."
         ),
-        "not_a_channel": "❌ هذا ليس Channel.\n\nتأكد أنك أرسلت رابط قناة وليس مجموعة.",
+        "not_a_channel": "❌ عذراً، هذه الوجهة غير مدعومة (يجب أن تكون قناة عامة أو مجموعة تفاعلية).",
 
         "help_text": (
-            "ℹ️ <b>طريقة الاستخدام</b>\n\n"
-            "• أضف قناتك من «قنواتي»\n"
-            "• أنشئ منشوراً من «إنشاء منشور»\n"
-            "• اختر قناة → اكتب النص → أضف وسائط (اختياري)\n"
-            "• معاينة ثم نشر 🚀"
+            "ℹ️ <b>دليل الاستخدام السريع</b>\n\n"
+            "• أضف قناتك أو مجموعتك من قسم «إدارة القنوات والمجموعات» أو أضف البوت مشرفاً مباشرة.\n"
+            "• انقر على «إنشاء منشور جديد» لتصميم منشورك مع إمكانية إضافة أزرار تفاعلية مخصصة (بروابط وأيقونات جميلة).\n"
+            "• اختر الوجهة، أضف النص، الوسائط، والأزرار، ثم عاين منشورك وانشره بكل ثقة 🚀"
         ),
 
-        "choose_channel": "📢 <b>اختر القناة:</b>",
-        "no_channel_available": "❌ لا توجد قنوات. أضف قناة أولاً.",
+        "choose_channel": "📢 <b>اختر الوجهة المستهدفة للنشر:</b>",
+        "no_channel_available": "❌ لا توجد أي قنوات أو مجموعات متاحة للنشر حالياً. يجدر بك إضافة واحدة أولاً.",
         "send_post_text": (
-            "✍️ أرسل <b>نص المنشور</b> الآن.\n\n"
-            "يمكنك إرسال حتى 4096 حرف."
+            "✍️ أرسل الآن **نص المنشور** المميز الخاص بك.\n\n"
+            "*(يدعم التنسيقات والرموز التعبيرية بحد أقصى 4096 حرف)*"
         ),
-        "text_too_long": "⚠️ النص طويل جداً (الحد 4096).",
-        "text_empty": "⚠️ النص فارغ.",
+        "text_too_long": "⚠️ عذراً، النص طويل جداً (الحد الأقصى المسموح هو 4096 حرف).",
+        "text_empty": "⚠️ النص فارغ، يرجى كتابة نص صالح.",
         "send_media_or_skip": (
-            "📎 أرسل <b>صورة/فيديو/ملف</b> أو اضغط «تخطي»."
+            "📎 يمكنك إرسال **صورة، فيديو، أو ملف مرفق**، أو النقر على زر **«تخطي»** لنشر نص فقط."
         ),
-        "media_received": "✅ تم استلام الوسائط.",
+        "media_received": "✅ تم استلام الملف والوسائط بنجاح.",
         "buttons_info": (
-            "🔘 <b>أزرار المنشور</b>\n\n"
-            "يمكنك إضافة أزرار (نص + رابط) أو تخطي.\n\n"
-            "عند الانتهاء اضغط «تم»."
+            "🔘 <b>تخصيص أزرار التفاعل الشفافة (Inline Buttons)</b>\n\n"
+            "يمكنك إضافة أزرار أنيقة ومخصصة بالكامل (مثل: زيارة الموقع 🌐، انضمام للقناة 🚀، تواصل معنا 💬).\n\n"
+            "اختر ما يناسبك أدناه:"
         ),
-        "btn_add_button": "➕ إضافة زر",
-        "button_text_prompt": "أرسل نص الزر:",
-        "button_url_prompt": "أرسل رابط الزر (يبدأ بـ https://):",
-        "button_invalid_url": "⚠️ رابط غير صحيح. أرسل رابطاً يبدأ بـ https://",
-        "button_added": "✅ تم إضافة الزر.",
-        "preview_title": "👀 <b>معاينة المنشور</b>",
-        "preview_channel": "📢 القناة: <b>{}</b>",
-        "preview_text": "📝 النص:\n{}",
-        "preview_media": "📎 وسائط: {}",
-        "preview_buttons": "🔘 أزرار: {}",
+        "btn_add_button": "➕ إضافة زر تفاعلي جديد",
+        "button_text_prompt": "أدخل **نص الزر** المطلوب ظهوره للمستخدمين (يمكنك إرفاق رموز تعبيرية جمالية مثل 🔗 أو 🌟):",
+        "button_url_prompt": "أدخل **رابط الزر** (يجب أن يبدأ بـ `https://` أو `http://`):",
+        "button_invalid_url": "⚠️ الرابط المدخل غير صحيح. تأكد أنه يبدأ بـ https://",
+        "button_added": "✅ تم إضافة الزر بنجاح! يمكنك إضافة زر آخر أو الضغط على «إنهاء».",
+        "preview_title": "👀 <b>معاينة شكل المنشور النهائي</b>",
+        "preview_channel": "🎯 الوجهة المستهدفة: <b>{}</b>",
+        "preview_text": "📝 نص المنشور:\n{}",
+        "preview_media": "📎 المرفقات: {}",
+        "preview_buttons": "🔘 الأزرار المخصصة: {}",
         "publish_confirm": (
-            "هل أنت متأكد من النشر؟\n\n"
-            "اضغط «🚀 نشر» للنشر في القناة."
+            "هل أنت جاهز لنشر هذا المحتوى بالصيغة أعلاه؟\n\n"
+            "اضغط على زر **«🚀 نشر الآن في الوجهة»** أدناه للتنفيذ الفوري."
         ),
-        "published": "✅ تم النشر في القناة بنجاح 🚀",
-        "publish_failed": "❌ فشل النشر: {}",
-        "cancelled": "❌ تم الإلغاء.",
+        "published": "🎉 تم النشر بنجاح تام في الوجهة المحددة 🚀",
+        "publish_failed": "❌ حدث خطأ أثناء عملية النشر: {}",
+        "cancelled": "❌ تم إلغاء العملية الحالية بنجاح.",
 
-        "no_posts": "📭 لا توجد منشورات.",
-        "posts_list": "📋 <b>منشوراتك:</b>\n\n",
+        "no_posts": "📭 لا توجد أي منشورات سابقة مسجلة في سجلك.",
+        "posts_list": "📋 <b>سجل المنشورات السابقة:</b>\n\n",
         "post_view": (
-            "📋 <b>منشور #{id}</b>\n\n"
+            "📋 <b>تفاصيل المنشور #{id}</b>\n\n"
             "📝 النص:\n{text}\n\n"
             "{media_line}"
-            "🕐 {date}"
+            "🕐 تاريخ الإنشاء: {date}"
         ),
-        "edit_prompt": "✏️ أرسل النص الجديد:",
-        "edit_success": "✅ تم تعديل المنشور.",
-        "edit_failed": "❌ فشل التعديل: {}",
-        "edit_no_channel": "❌ القناة غير مرتبطة.",
-        "edit_no_message_id": "❌ لا يمكن التعديل: message_id مفقود.",
+        "edit_prompt": "✏️ أرسل النص الجديد المعدل للمنشور:",
+        "edit_success": "✅ تم تحديث وتعديل المنشور بنجاح.",
+        "edit_failed": "❌ فشل تعديل المنشور: {}",
+        "edit_no_channel": "❌ عذراً، الوجهة غير مرتبطة أو محذوفة.",
+        "edit_no_message_id": "❌ لا يمكن التعديل المباشر نظراً لفقدان معرّف الرسالة.",
 
-        "stats_title": "📊 <b>إحصائياتك</b>",
+        "stats_title": "📊 <b>إحصاءات نشاطك الشخصي</b>",
         "stats_body": (
-            "📢 القنوات: <b>{channels}</b>\n"
-            "📝 المنشورات: <b>{posts}</b>"
+            "📢 القنوات والمجموعات: <b>{channels}</b>\n"
+            "📝 المنشورات المنشورة: <b>{posts}</b>"
         ),
 
-        "admin_title": "👑 <b>لوحة تحكم الأدمن</b>",
+        "admin_title": "👑 <b>لوحة تحكم المشرف العام</b>",
         "admin_stats": (
-            "👥 <b>إجمالي المستخدمين:</b> {total}\n"
-            "🟢 <b>نشطاء 24 ساعة:</b> {a24}\n"
-            "🟢 <b>نشطاء 7 أيام:</b> {a7}\n\n"
-            "📢 <b>إجمالي القنوات:</b> {channels}\n"
-            "📝 <b>إجمالي المنشورات:</b> {posts}"
+            "👥 إجمالي المستخدمين: <b>{total}</b>\n"
+            "🟢 النشطون خلال 24 ساعة: <b>{a24}</b>\n"
+            "🟢 النشطون خلال 7 أيام: <b>{a7}</b>\n\n"
+            "📢 إجمالي القنوات والمجموعات: <b>{channels}</b>\n"
+            "📝 إجمالي المنشورات الكلي: <b>{posts}</b>"
         ),
-        "admin_users": "👥 <b>آخر المستخدمين:</b>\n\n",
+        "admin_users": "👥 <b>قائمة آخر المستخدمين المنضمين:</b>\n\n",
         "admin_user_row": (
             "• <code>{tid}</code>\n"
             "  🌐 {lang} · 🕐 {date}\n"
         ),
 
         "auto_added_ok": (
-            "✅ <b>تم ربط القناة تلقائياً!</b>\n\n"
+            "✅ <b>تم ربط الوجهة (قناة/مجموعة) تلقائياً بنجاح!</b>\n\n"
             "📢 <b>{title}</b>\n"
             "🔗 <code>{username}</code>\n\n"
-            "🎉 البوت جاهز للنشر."
+            "🎉 البوت مستعد تماماً للنشر فيها."
         ),
         "auto_added_no_post": (
-            "✅ <b>تم ربط القناة تلقائياً!</b>\n\n"
+            "✅ <b>تم ربط الوجهة تلقائياً!</b>\n\n"
             "📢 <b>{title}</b>\n"
             "🔗 <code>{username}</code>\n\n"
-            "⚠️ البوت <b>لا يملك صلاحية نشر الرسائل</b>.\n\n"
-            "اذهب إلى إدارة القناة → المسؤولون → البوت\n"
-            "وفعّل: ✅ نشر الرسائل."
+            "⚠️ تنبيه: البوت <b>لا يمتلك صلاحية النشر</b> حالياً.\n\n"
+            "يرجى منحه صلاحية (نشر الرسائل) من إعدادات المشرفين."
         ),
     },
 
     "en": {
-        "main_title": "⚡ <b>Telegram Publisher</b>",
+        "main_title": "✨ <b>Advanced Professional Publisher Platform</b> 🚀",
         "welcome": (
             "Welcome 👋\n\n"
-            "Create and publish posts to your channels easily."
+            "Easily manage your channels and groups and publish content with style."
         ),
         "stats_line": (
-            "📢 Channels: <b>{channels}</b>\n"
-            "📝 Posts: <b>{posts}</b>"
+            "📢 Connected Destinations: <b>{channels}</b>\n"
+            "📝 Total Posts: <b>{posts}</b>"
         ),
-        "choose_language": "🌐 Choose bot language:",
+        "choose_language": "🌐 Choose your preferred language:",
         "language_saved_ar": "✅ Arabic selected.",
         "language_saved_en": "✅ English selected.",
 
-        "btn_create_post": "✨ Create Post",
-        "btn_my_channels": "📢 My Channels",
-        "btn_my_posts": "📋 My Posts",
+        "btn_create_post": "✨ Create New Post",
+        "btn_my_channels": "📢 Manage Destinations",
+        "btn_my_posts": "📋 Posts Archive",
         "btn_stats": "📊 Statistics",
         "btn_language": "🌐 Language",
-        "btn_home": "🏠 Home",
-        "btn_help": "ℹ️ Help",
-        "btn_add_channel": "➕ Add Channel",
+        "btn_home": "🏠 Main Menu",
+        "btn_help": "ℹ️ Help Guide",
+        "btn_add_channel": "➕ Add Channel/Group",
         "btn_back": "◀️ Back",
         "btn_cancel": "❌ Cancel",
         "btn_skip": "⏭️ Skip",
         "btn_done": "✅ Done",
-        "btn_publish": "🚀 Publish",
-        "btn_preview": "👀 Preview",
+        "btn_publish": "🚀 Publish Now",
+        "btn_preview": "👀 Preview Post",
         "btn_edit": "✏️ Edit Text",
         "btn_delete": "🗑️ Delete",
 
         "no_channels": (
-            "You don't have any channels.\n\n"
-            "Use /addchannel to add one."
+            "⚠️ No channels or groups linked yet.\n\n"
+            "Add the bot as an admin to your channel/group or use /addchannel."
         ),
-        "channel_list": "📢 <b>Your channels:</b>\n\n",
-        "channel_added": "✅ Channel added:\n<b>{}</b>",
-        "channel_deleted": "🗑️ Channel deleted.",
-        "confirm_delete_channel": "Delete channel <b>{}</b>?",
-        "delete_confirm_yes": "🗑️ Yes, delete",
-        "delete_confirm_no": "❌ No",
+        "channel_list": "📢 <b>Your Connected Destinations:</b>\n\n",
+        "channel_added": "✅ Destination linked:\n<b>{}</b>",
+        "channel_deleted": "🗑️ Destination unlinked.",
+        "confirm_delete_channel": "Do you want to unlink <b>{}</b>?",
+        "delete_confirm_yes": "🗑️ Yes, Unlink",
+        "delete_confirm_no": "❌ Cancel",
 
         "add_channel_help": (
-            "➕ <b>Add Channel</b>\n\n"
-            "🔹 <b>Method 1 — Automatic (easiest):</b>\n"
-            "Add the bot as admin to your channel — it will be linked automatically ✅\n\n"
-            "🔹 <b>Method 2 — Manual:</b>\n"
-            "Send one of these formats:\n"
-            "• <code>@razanaltifa</code>\n"
-            "• <code>razanaltifa</code>\n"
-            "• <code>https://t.me/razanaltifa</code>\n\n"
-            "⚠️ Private invite links (<code>+</code>) are not supported."
+            "➕ <b>Add New Destination</b>\n\n"
+            "🔹 <b>Method 1 (Automatic):</b> Add the bot as an admin to your channel or group.\n"
+            "🔹 <b>Method 2 (Manual):</b> Send the username or link like <code>@channel</code>."
         ),
-        "channel_private_link": (
-            "❌ <b>Private invite links are not supported.</b>\n\n"
-            "Use one of these formats:\n"
-            "• <code>@razanaltifa</code>\n"
-            "• <code>https://t.me/razanaltifa</code>\n\n"
-            "Or add the bot as admin — it will be linked automatically ✅"
-        ),
-        "channel_invalid_format": (
-            "⚠️ <b>Invalid format.</b>\n\n"
-            "Send one of these:\n"
-            "• <code>@razanaltifa</code>\n"
-            "• <code>razanaltifa</code>\n"
-            "• <code>https://t.me/razanaltifa</code>"
-        ),
-        "channel_not_found": (
-            "❌ <b>Channel not found.</b>\n\n"
-            "Check the link or username."
-        ),
-        "not_admin": (
-            "❌ <b>The bot is not an admin in this channel.</b>\n\n"
-            "Add the bot as admin then try again."
-        ),
-        "not_can_post": (
-            "❌ <b>The bot is admin but cannot post messages.</b>\n\n"
-            "Go to:\n"
-            "Channel Settings → Admins → Bot\n"
-            "Enable: ✅ Post Messages"
-        ),
-        "not_a_channel": "❌ This is not a channel.\n\nSend a channel link, not a group.",
+        "channel_private_link": "❌ Private invite links are not supported.",
+        "channel_invalid_format": "⚠️ Invalid format. Send a valid username or link.",
+        "channel_not_found": "❌ Destination not found.",
+        "not_admin": "❌ The bot is not an admin in this destination.",
+        "not_can_post": "❌ The bot is an admin but lacks 'Post Messages' permission.",
+        "not_a_channel": "❌ Invalid destination type.",
 
-        "help_text": (
-            "ℹ️ <b>How to use</b>\n\n"
-            "• Add a channel from «My Channels»\n"
-            "• Create a post from «Create Post»\n"
-            "• Choose channel → write text → add media (optional)\n"
-            "• Preview then Publish 🚀"
-        ),
+        "help_text": "ℹ️ <b>How to use</b>\n\nConnect destinations, create posts with custom buttons, preview and publish!",
 
-        "choose_channel": "📢 <b>Choose a channel:</b>",
-        "no_channel_available": "❌ No channels. Add one first.",
-        "send_post_text": (
-            "✍️ Send the <b>post text</b> now.\n\n"
-            "Up to 4096 characters."
-        ),
-        "text_too_long": "⚠️ Text too long (max 4096).",
+        "choose_channel": "📢 <b>Select target destination:</b>",
+        "no_channel_available": "❌ No available destinations.",
+        "send_post_text": "✍️ Send the post text now (up to 4096 characters).",
+        "text_too_long": "⚠️ Text is too long.",
         "text_empty": "⚠️ Text is empty.",
-        "send_media_or_skip": (
-            "📎 Send a <b>photo/video/file</b> or press «Skip»."
-        ),
+        "send_media_or_skip": "📎 Send photo, video, file or press 'Skip'.",
         "media_received": "✅ Media received.",
-        "buttons_info": (
-            "🔘 <b>Post buttons</b>\n\n"
-            "You can add buttons (text + URL) or skip.\n\n"
-            "When done press «Done»."
-        ),
-        "btn_add_button": "➕ Add button",
-        "button_text_prompt": "Send the button text:",
-        "button_url_prompt": "Send the button URL (starts with https://):",
-        "button_invalid_url": "⚠️ Invalid URL. Send a URL starting with https://",
-        "button_added": "✅ Button added.",
-        "preview_title": "👀 <b>Post preview</b>",
-        "preview_channel": "📢 Channel: <b>{}</b>",
+        "buttons_info": "🔘 <b>Custom Inline Buttons</b>\n\nAdd your custom button texts and URLs below:",
+        "btn_add_button": "➕ Add Custom Button",
+        "button_text_prompt": "Send the button text (with optional emojis):",
+        "button_url_prompt": "Send the button URL (starting with https://):",
+        "button_invalid_url": "⚠️ Invalid URL. Must start with https://",
+        "button_added": "✅ Button added successfully.",
+        "preview_title": "👀 <b>Post Preview</b>",
+        "preview_channel": "🎯 Destination: <b>{}</b>",
         "preview_text": "📝 Text:\n{}",
         "preview_media": "📎 Media: {}",
         "preview_buttons": "🔘 Buttons: {}",
-        "publish_confirm": (
-            "Are you sure you want to publish?\n\n"
-            "Press «🚀 Publish» to send to channel."
-        ),
-        "published": "✅ Published successfully 🚀",
+        "publish_confirm": "Ready to publish? Click '🚀 Publish Now'.",
+        "published": "🎉 Published successfully 🚀",
         "publish_failed": "❌ Publish failed: {}",
         "cancelled": "❌ Cancelled.",
 
-        "no_posts": "📭 No posts yet.",
-        "posts_list": "📋 <b>Your posts:</b>\n\n",
-        "post_view": (
-            "📋 <b>Post #{id}</b>\n\n"
-            "📝 Text:\n{text}\n\n"
-            "{media_line}"
-            "🕐 {date}"
-        ),
+        "no_posts": "📭 No posts found.",
+        "posts_list": "📋 <b>Your Posts:</b>\n\n",
+        "post_view": "📋 <b>Post #{id}</b>\n\n📝 Text:\n{text}\n\n{media_line}🕐 {date}",
         "edit_prompt": "✏️ Send the new text:",
         "edit_success": "✅ Post updated.",
-        "edit_failed": "❌ Edit failed: {}",
-        "edit_no_channel": "❌ Channel not connected.",
-        "edit_no_message_id": "❌ Cannot edit: message_id missing.",
+        "edit_failed": "❌ Update failed: {}",
+        "edit_no_channel": "❌ Destination not found.",
+        "edit_no_message_id": "❌ Message ID missing.",
 
-        "stats_title": "📊 <b>Your statistics</b>",
-        "stats_body": (
-            "📢 Channels: <b>{channels}</b>\n"
-            "📝 Posts: <b>{posts}</b>"
-        ),
+        "stats_title": "📊 <b>Your Statistics</b>",
+        "stats_body": "📢 Destinations: <b>{channels}</b>\n📝 Posts: <b>{posts}</b>",
 
         "admin_title": "👑 <b>Admin Dashboard</b>",
-        "admin_stats": (
-            "👥 <b>Total users:</b> {total}\n"
-            "🟢 <b>Active 24h:</b> {a24}\n"
-            "🟢 <b>Active 7d:</b> {a7}\n\n"
-            "📢 <b>Total channels:</b> {channels}\n"
-            "📝 <b>Total posts:</b> {posts}"
-        ),
+        "admin_stats": "👥 Total users: <b>{total}</b>\n🟢 Active 24h: <b>{a24}</b>\n🟢 Active 7d: <b>{a7}</b>\n📢 Destinations: <b>{channels}</b>\n📝 Posts: <b>{posts}</b>",
         "admin_users": "👥 <b>Latest users:</b>\n\n",
-        "admin_user_row": (
-            "• <code>{tid}</code>\n"
-            "  🌐 {lang} · 🕐 {date}\n"
-        ),
+        "admin_user_row": "• <code>{tid}</code>\n  🌐 {lang} · 🕐 {date}\n",
 
-        "auto_added_ok": (
-            "✅ <b>Channel linked automatically!</b>\n\n"
-            "📢 <b>{title}</b>\n"
-            "🔗 <code>{username}</code>\n\n"
-            "🎉 The bot is ready to publish."
-        ),
-        "auto_added_no_post": (
-            "✅ <b>Channel linked automatically!</b>\n\n"
-            "📢 <b>{title}</b>\n"
-            "🔗 <code>{username}</code>\n\n"
-            "⚠️ The bot <b>cannot post messages</b>.\n\n"
-            "Go to: Channel Settings → Admins → Bot\n"
-            "Enable: ✅ Post Messages."
-        ),
+        "auto_added_ok": "✅ <b>Destination linked automatically!</b>\n\n📢 <b>{title}</b>",
+        "auto_added_no_post": "✅ <b>Destination linked automatically!</b>\n\n⚠️ Bot needs 'Post Messages' permission.",
     }
 }
 
@@ -2862,7 +2524,7 @@ def t(language, key):
 
 
 # =========================================================
-# PARSE CHANNEL INPUT
+# PARSE CHANNEL / GROUP INPUT
 # =========================================================
 
 def parse_channel_input(raw: str):
@@ -2903,7 +2565,7 @@ def parse_channel_input(raw: str):
 
 
 # =========================================================
-# KEYBOARDS
+# KEYBOARDS (تصاميم الأزرار ولوحات المفاتيح)
 # =========================================================
 
 def language_keyboard():
@@ -2911,7 +2573,7 @@ def language_keyboard():
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🇸🇦 العربية",
+                    text="🇸🇦 العربية (Arabic)",
                     callback_data="lang_ar"
                 ),
                 InlineKeyboardButton(
@@ -2948,27 +2610,27 @@ def main_inline_keyboard(language):
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text=t(language, "btn_create_post"),
+                    text=f"✨ {t(language, 'btn_create_post')}",
                     callback_data="menu:create"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t(language, "btn_my_channels"),
+                    text=f"📢 {t(language, 'btn_my_channels')}",
                     callback_data="menu:channels"
                 ),
                 InlineKeyboardButton(
-                    text=t(language, "btn_my_posts"),
+                    text=f"📋 {t(language, 'btn_my_posts')}",
                     callback_data="menu:posts"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t(language, "btn_stats"),
+                    text=f"📊 {t(language, 'btn_stats')}",
                     callback_data="menu:stats"
                 ),
                 InlineKeyboardButton(
-                    text=t(language, "btn_language"),
+                    text=f"🌐 {t(language, 'btn_language')}",
                     callback_data="menu:language"
                 )
             ]
@@ -3160,7 +2822,7 @@ async def start_handler(message: Message, state: FSMContext):
         touch_user(message.from_user.id)
 
         await message.answer(
-            "🌐 <b>Choose your language / اختر اللغة</b>",
+            "🌐 <b>Choose your language / اختر لغة البوت:</b>",
             reply_markup=language_keyboard()
         )
         return
@@ -3178,7 +2840,7 @@ async def send_main_menu(message: Message, language):
 
     text = (
         f"{t(language, 'main_title')}\n"
-        "━━━━━━━━━━━━━━━━━━\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         f"{t(language, 'welcome')}\n\n"
         + t(language, "stats_line").format(
             channels=channels_count,
@@ -3193,7 +2855,7 @@ async def send_main_menu(message: Message, language):
     )
 
     await message.answer(
-        "👇",
+        "👇 لوحة التحكم السريعة:",
         reply_markup=main_reply_keyboard(language)
     )
 
@@ -3265,7 +2927,7 @@ async def menu_home(callback: CallbackQuery, state: FSMContext):
 
     text = (
         f"{t(language, 'main_title')}\n"
-        "━━━━━━━━━━━━━━━━━━\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         f"{t(language, 'welcome')}\n\n"
         + t(language, "stats_line").format(
             channels=channels_count,
@@ -3280,7 +2942,7 @@ async def menu_home(callback: CallbackQuery, state: FSMContext):
     )
 
 
-@dp.message(F.text.in_(["🏠 الرئيسية", "🏠 Home"]))
+@dp.message(F.text.in_(["🏠 الرئيسية", "🏠 Main Menu"]))
 async def home_reply(message: Message, state: FSMContext):
     await state.clear()
     language = get_language(message.from_user.id)
@@ -3319,7 +2981,7 @@ async def menu_stats(callback: CallbackQuery, state: FSMContext):
 
     text = (
         f"{t(language, 'stats_title')}\n"
-        "━━━━━━━━━━━━━━━━━━\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         + t(language, "stats_body").format(
             channels=channels_count,
             posts=posts_count
@@ -3344,7 +3006,7 @@ async def stats_reply(message: Message, state: FSMContext):
 
     text = (
         f"{t(language, 'stats_title')}\n"
-        "━━━━━━━━━━━━━━━━━━\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         + t(language, "stats_body").format(
             channels=channels_count,
             posts=posts_count
@@ -3357,7 +3019,7 @@ async def stats_reply(message: Message, state: FSMContext):
     )
 
 
-@dp.message(F.text.in_(["ℹ️ المساعدة", "ℹ️ Help"]))
+@dp.message(F.text.in_(["ℹ️ المساعدة", "ℹ️ Help Guide"]))
 async def help_handler(message: Message, state: FSMContext):
     await state.clear()
     language = get_language(message.from_user.id)
@@ -3365,7 +3027,7 @@ async def help_handler(message: Message, state: FSMContext):
 
 
 # =========================================================
-# CHANNELS
+# CHANNELS & GROUPS MANAGEMENT
 # =========================================================
 
 @dp.message(Command("addchannel"))
@@ -3380,7 +3042,7 @@ async def addchannel_cmd(message: Message, state: FSMContext):
     await state.set_state(ChannelFlow.waiting_username)
 
 
-@dp.message(F.text.in_(["📢 قنواتي", "📢 My Channels"]))
+@dp.message(F.text.in_(["📢 قنواتي", "📢 إدارة القنوات والمجموعات"]))
 async def channels_reply(message: Message, state: FSMContext):
     await state.clear()
     language = get_language(message.from_user.id)
@@ -3432,7 +3094,7 @@ async def menu_channels(callback: CallbackQuery, state: FSMContext):
         buttons.append(
             [
                 InlineKeyboardButton(
-                    text=f"🗑️ {username}",
+                    text=f"🗑️ إزالة ربط: {username}",
                     callback_data=f"channel:del:{channel['channel_id']}"
                 )
             ]
@@ -3490,7 +3152,7 @@ async def show_channels(message: Message, language):
         buttons.append(
             [
                 InlineKeyboardButton(
-                    text=f"🗑️ {username}",
+                    text=f"🗑️ إزالة ربط: {username}",
                     callback_data=f"channel:del:{channel['channel_id']}"
                 )
             ]
@@ -3572,7 +3234,7 @@ async def channel_delete(callback: CallbackQuery):
 
 
 # =========================================================
-# RECEIVE CHANNEL USERNAME / LINK
+# RECEIVE CHANNEL / GROUP INPUT
 # =========================================================
 
 @dp.message(ChannelFlow.waiting_username)
@@ -3602,7 +3264,8 @@ async def receive_channel_username(
     try:
         chat = await bot.get_chat(chat_id=username)
 
-        if chat.type != "channel":
+        # دعم القنوات والمجموعات والمجموعات الخارقة (Groups & Supergroups & Channels)
+        if chat.type not in ("channel", "supergroup", "group"):
             await message.answer(t(language, "not_a_channel"))
             return
 
@@ -3616,15 +3279,12 @@ async def receive_channel_username(
             await message.answer(t(language, "not_admin"))
             return
 
-        can_post = getattr(
-            member,
-            "can_post_messages",
-            False
-        )
-
-        if not can_post:
-            await message.answer(t(language, "not_can_post"))
-            return
+        # فحص الصلاحيات إذا كانت قناة
+        if chat.type == "channel":
+            can_post = getattr(member, "can_post_messages", False)
+            if not can_post:
+                await message.answer(t(language, "not_can_post"))
+                return
 
         channel_username = (
             f"@{chat.username}"
@@ -3648,7 +3308,7 @@ async def receive_channel_username(
         await state.clear()
 
         await message.answer(
-            "✅ <b>تمت إضافة القناة بنجاح!</b>\n\n"
+            "✅ <b>تمت إضافة الوجهة بنجاح تام!</b>\n\n"
             f"📢 <b>{chat.title or username}</b>\n"
             f"🔗 <code>{channel_username}</code>",
             reply_markup=main_reply_keyboard(language),
@@ -3668,11 +3328,11 @@ async def receive_channel_username(
 
     except Exception:
         logger.exception("Channel verification failed")
-        await message.answer("❌ حدث خطأ. راجع logs.")
+        await message.answer("❌ حدث خطأ أثناء التحقق. تأكد أن البوت مضاف كمشرف.")
 
 
 # =========================================================
-# AUTO-ADD CHANNEL (my_chat_member)
+# AUTO-ADD DESTINATION (my_chat_member) للقنوات والمجموعات
 # =========================================================
 
 @dp.my_chat_member()
@@ -3681,20 +3341,14 @@ async def on_my_chat_member(update: ChatMemberUpdated):
     new_status = update.new_chat_member.status
     old_status = update.old_chat_member.status
 
-    if chat.type != "channel":
+    if chat.type not in ("channel", "supergroup", "group"):
         return
 
     if (
         new_status == ChatMemberStatus.ADMINISTRATOR
         and old_status != ChatMemberStatus.ADMINISTRATOR
     ):
-        can_post = getattr(
-            update.new_chat_member,
-            "can_post_messages",
-            False
-        )
         adder = update.from_user
-
         if not adder:
             return
 
@@ -3719,17 +3373,10 @@ async def on_my_chat_member(update: ChatMemberUpdated):
         language = user["language"]
 
         try:
-            if can_post:
-                note = t(language, "auto_added_ok").format(
-                    title=chat.title or channel_username,
-                    username=channel_username
-                )
-            else:
-                note = t(language, "auto_added_no_post").format(
-                    title=chat.title or channel_username,
-                    username=channel_username
-                )
-
+            note = t(language, "auto_added_ok").format(
+                title=chat.title or channel_username,
+                username=channel_username
+            )
             await bot.send_message(
                 chat_id=adder.id,
                 text=note,
@@ -3742,14 +3389,14 @@ async def on_my_chat_member(update: ChatMemberUpdated):
         ChatMemberStatus.LEFT,
         ChatMemberStatus.KICKED,
     ):
-        logger.info("Bot removed from channel %s", chat.id)
+        logger.info("Bot removed from destination %s", chat.id)
 
 
 # =========================================================
-# CREATE POST FLOW
+# CREATE POST FLOW & CUSTOM BUTTONS
 # =========================================================
 
-@dp.message(F.text.in_(["✨ إنشاء منشور", "✨ Create Post"]))
+@dp.message(F.text.in_(["✨ إنشاء منشور", "✨ إنشاء منشور جديد"]))
 async def create_post_reply(message: Message, state: FSMContext):
     await state.clear()
     await start_post_flow(message, state)
@@ -3791,7 +3438,7 @@ async def start_post_flow(
         buttons.append(
             [
                 InlineKeyboardButton(
-                    text=username,
+                    text=f"🎯 {username}",
                     callback_data=f"post:channel:{channel['channel_id']}"
                 )
             ]
@@ -3993,7 +3640,7 @@ async def button_receive_text(message: Message, state: FSMContext):
     text = (message.text or "").strip()
 
     if not text:
-        await message.answer("⚠️")
+        await message.answer("⚠️ يرجى إدخال نص صالح للزر.")
         return
 
     await state.update_data(button_text=text)
@@ -4047,7 +3694,7 @@ async def show_preview(callback: CallbackQuery, data, language):
 
     lines = [
         f"{t(language, 'preview_title')}",
-        "━━━━━━━━━━━━━━━━━━",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━",
         t(language, "preview_channel").format(channel),
         "",
         t(language, "preview_text").format(text)
@@ -4059,16 +3706,20 @@ async def show_preview(callback: CallbackQuery, data, language):
 
     if buttons:
         lines.append("")
-        button_labels = " · ".join(b["text"] for b in buttons)
+        button_labels = " · ".join(f"[{b['text']}]" for b in buttons)
         lines.append(t(language, "preview_buttons").format(button_labels))
 
     lines.append("")
     lines.append(t(language, "publish_confirm"))
 
+    keyboard = build_inline_keyboard(buttons)
+    # إضافة زر النشر صراحة مع الأزرار المخصصة للمعاينة
+    inline_kb = preview_keyboard(language)
+    
     await safe_edit_or_send(
         callback,
         "\n".join(lines),
-        preview_keyboard(language)
+        inline_kb
     )
 
 
@@ -4195,7 +3846,7 @@ async def flow_cancel(callback: CallbackQuery, state: FSMContext):
 # MY POSTS + EDIT
 # =========================================================
 
-@dp.message(F.text.in_(["📋 منشوراتي", "📋 My Posts"]))
+@dp.message(F.text.in_(["📋 منشوراتي", "📋 أرشيف المنشورات"]))
 async def my_posts_reply(message: Message, state: FSMContext):
     await state.clear()
     language = get_language(message.from_user.id)
@@ -4440,7 +4091,7 @@ async def admin_command(message: Message):
     stats = get_bot_stats()
     text = (
         f"{t('ar', 'admin_title')}\n"
-        "━━━━━━━━━━━━━━━━━━\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         + t("ar", "admin_stats").format(
             total=stats["total_users"],
             a24=stats["active_24h"],
@@ -4496,7 +4147,7 @@ async def main():
     except Exception:
         pass
 
-    logger.info("Telegram Publisher Bot started (no web)")
+    logger.info("Telegram Publisher Bot started successfully (with Groups & Channels & Custom Buttons)")
     await dp.start_polling(bot)
 
 
